@@ -1,8 +1,7 @@
-# api-serverless
+# api-worker
 
 🚧 This repository is under construction. 🚧
 
-This repo contains serverless functions for [Cloudflare
-Workers](https://developers.cloudflare.com/workers/) that serve the Ace Archive
-API using data from [Cloudflare
+This repo is a [Cloudflare Worker](https://developers.cloudflare.com/workers/)
+that serve the Ace Archive API using data from [Workers
 KV](https://developers.cloudflare.com/workers/learning/how-kv-works/).
