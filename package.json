@@ -43,6 +43,7 @@
     "wrangler": "^2.1.10"
   },
   "dependencies": {
+    "content-type": "^1.0.4",
     "hash-wasm": "^4.9.0",
     "multiformats": "^9.9.0"
   }
