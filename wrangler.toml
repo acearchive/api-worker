@@ -7,7 +7,6 @@ account_id = "9d143afa60e911e9904e835bd1db8504"
 pattern = "api.acearchive.lgbt"
 custom_domain = true
 
-[[kv_namespaces]]
-binding = "ARTIFACTS_KV"
-id = "17d335a0392045a499e5b7b2af8e4321"
-preview_id = "17d335a0392045a499e5b7b2af8e4321"
+[[services]]
+binding = "HASHER_WORKER"
+service = "acearchive-hasher"

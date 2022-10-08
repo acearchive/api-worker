@@ -2,7 +2,6 @@
   "name": "api-worker",
   "version": "0.1.0",
   "private": true,
-  "description": "A serverless function which handles API requests for Ace Archive",
   "homepage": "https://github.com/acearchive/api-worker#readme",
   "bugs": {
     "url": "https://github.com/acearchive/api-worker/issues"
@@ -43,8 +42,6 @@
     "wrangler": "^2.1.10"
   },
   "dependencies": {
-    "content-type": "^1.0.4",
-    "hash-wasm": "^4.9.0",
-    "multiformats": "^9.9.0"
+    "itty-router": "^2.6.6"
   }
 }
