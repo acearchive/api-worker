@@ -7,7 +7,3 @@ usage_model = "bundled"
 [route]
 pattern = "api.acearchive.lgbt"
 custom_domain = true
-
-[[services]]
-binding = "HASHER_WORKER"
-service = "acearchive-hasher"
