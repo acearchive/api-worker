@@ -1,0 +1,227 @@
+openapi: "3.0.0"
+info:
+  version: "0.1.0"
+  title: "Ace Archive API"
+  description: >
+    An API for querying metadata about artifacts in [Ace
+    Archive](https://acearchive.lgbt).
+  contact:
+    url: "https://github.com/acearchive/acearchive.lgbt/issues"
+    email: "contact@acearchive.lgbt"
+  license:
+    name: "MIT"
+servers:
+  - url: "https://api.acearchive.lgbt/v0"
+paths:
+  /artifacts/{id}:
+    get:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: >
+            The unique ID of the artifact, also sometimes called the "artifact
+            slug."
+          example: "orlando-the-asexual-manifesto"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/artifact"
+components:
+  schemas:
+    artifact:
+      type: object
+      required:
+        - id
+        - title
+        - summary
+        - files
+        - links
+        - people
+        - identities
+        - fromYear
+        - decades
+        - aliases
+      properties:
+        id:
+          type: string
+          description: >
+            The artifact ID, also called the "artifact slug."
+
+            The `id` of an artifact may change at any time, at which point it
+            will be appended to the `aliases` array. Exceptions to this rule may
+            be made in exceptional circumstances for the sake of privacy.
+        title:
+          type: string
+          description: >
+            The title of the artifact, which may use CommonMark-style asterisk
+            syntax to denote `<cite></cite>` markup.
+        summary:
+          type: string
+          description: >
+            A short summary of the artifact.
+        description:
+          type: string
+          description: >
+            A longer description of the artifact.
+        files:
+          type: array
+          description: >
+            The files associated with this artifact.
+          uniqueItems: true
+          items:
+            type: object
+            required:
+              - name
+              - fileName
+              - hash
+              - hashAlgorithm
+              - url
+              - aliases
+            properties:
+              name:
+                type: string
+                description: >
+                  The human-readable name of the file.
+              fileName:
+                type: string
+                description: >
+                  The filename of the file, with an appropriate file extension.
+
+                  This uniquely identifies a file among all the files associated
+                  with the same artifact, meaning than any file in the archive
+                  can be uniquely identified by the combination of its artifact
+                  ID and its filename.
+
+                  The `fileName` of a file may change at any time, at which
+                  point it will be appended to the `aliases` array. Exceptions
+                  to this rule may be made in exceptional circumstances for the
+                  sake of privacy.
+              mediaType:
+                type: string
+                description: >
+                  The IANA media type of the file.
+
+                  This may not necessarily be a media type associated with the
+                  file extension in `fileName`. For example, the file extension
+                  may be `.bib` and the `mediaType` may be `text/plain`.
+
+                  The *type* component (`application`, `text`, `image`, etc.)
+                  will always be a registered IANA type, but the *subtype*
+                  component (`pdf`, `png`, `html`, etc.) may be either a
+                  registered subtype or an unofficial subtype in common use. The
+                  `mediaType` may or may not include *suffix* and *parameter*
+                  components.
+              hash:
+                type: string
+                pattern: "^[0-9a-f]+$"
+                description: >
+                  The cryptographic hash of the file encoded as a hexadecimal
+                  string.
+
+                  The `hashAlgorithm` property contains the hash algorithm used
+                  to generate this hash.
+              hashAlgorithm:
+                type: string
+                description: >
+                  The cryptographic hash algorithm used to generated the `hash`
+                  of the file.
+
+                  New hash algorithms may be added to this enum in the future,
+                  and it will be considered a semver minor version bump.
+
+                  The names of the hash algorithms in this enum come from the
+                  [multiformats codec
+                  table](https://github.com/multiformats/multicodec/blob/master/table.csv).
+                  Only algorithms with a `permanent` status will be used.
+                enum:
+                  - "sha2-256"
+              url:
+                type: string
+                description: >
+                  The URL where this file can be downloaded.
+                format: uri
+              lang:
+                type: string
+                description: >
+                  The natural language of this file, if applicable, as an [RFC
+                  5646](https://datatracker.ietf.org/doc/html/rfc5646) language
+                  tag.
+              aliases:
+                type: array
+                description: >
+                  An array of aliases for the `fileName`.
+
+                  Filename aliases in this array may be used in place of the
+                  `fileName` for API requests.
+                items:
+                  type: string
+        links:
+          type: array
+          description: >
+            The links associated with this artifact.
+          items:
+            type: object
+            required:
+              - name
+              - url
+            properties:
+              name:
+                type: string
+                description: >
+                  The human-readable name of this link.
+              url:
+                type: string
+                description: >
+                  The URL the link points to.
+                format: uri
+        people:
+          type: array
+          description: >
+            The people associated with this artifact.
+          items:
+            type: string
+        identities:
+          type: array
+          description: >
+            The personal identity labels associated with this artifact.
+          items:
+            type: string
+        fromYear:
+          type: integer
+          description: >
+            The year the creative work associated with this artifact was
+            published or first released.
+
+            If `toYear` is also specified, this represents the start of a range
+            of years.
+        toYear:
+          type: integer
+          description: >
+            The final year that a creative work associated with this artifact
+            was published or first released, representing the end of a range of
+            years.
+        decades:
+          type: array
+          description: >
+            The list of decades in which a creative work associated with this
+            artifact was published or first released.
+
+            This array will always be sorted in ascending order.
+          items:
+            type: integer
+            multipleOf: 10
+        aliases:
+          type: array
+          description: >
+            An array of aliases for the artifact `id`.
+
+            Artifact ID aliases in this array may be used in place of the `id`
+            for API requests.
+          items:
+            type: string
