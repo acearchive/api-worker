@@ -31,16 +31,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/artifact"
+                $ref: "#/components/schemas/Artifact"
         "404":
           description: "Artifact not found"
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/problem"
+                $ref: "#/components/schemas/Problem"
 components:
   schemas:
-    artifact:
+    Artifact:
       type: object
       title: "Artifact Object"
       description: >
@@ -234,7 +234,7 @@ components:
             for API requests.
           items:
             type: string
-    problem:
+    Problem:
       type: object
       title: "Problem Object"
       description: >
