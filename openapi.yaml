@@ -15,6 +15,7 @@ servers:
 paths:
   /artifacts/{id}:
     get:
+      summary: "Get an artifact"
       parameters:
         - name: id
           in: path
@@ -38,22 +39,114 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+        "4XX":
+          description: "Unexpected error"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "5XX":
+          description: "Unexpected error"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /artifacts/:
+    get:
+      summary: "List artifacts"
+      parameters:
+        - name: "cursor"
+          in: "query"
+          description: >
+            An opaque string cursor for pagination.
+
+            Each page (except the final page) includes a cursor which can be
+            passed as a query argument to get the next page.
+          example: "cnRfhqxVunk"
+          schema:
+            type: string
+        - name: "limit"
+          in: "query"
+          description: >
+            The maximum number of artifacts to return in a page.
+
+            The size of a page may be smaller than this value, even if it's not
+            the final page.
+          example: 100
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - next_cursor
+                properties:
+                  items:
+                    type: array
+                    description: >
+                      The artifacts in the current page.
+
+                      If this array is empty or smaller than the given `limit`,
+                      it does not necessarily mean there are no more pages. The
+                      only way to determine if there are more pages is to check
+                      if `next_cursor` is `null`.
+                    items:
+                      $ref: "#/components/schemas/Artifact"
+                  next_cursor:
+                    type: string
+                    nullable: true
+                    description: >
+                      An opaque string cursor for pagination.
+
+                      This cursor can be passed as a query argument to get the
+                      next page. If this is `null`, then the current page is the
+                      final page.
+
+                      If this is not `null`, then there are more pages, even if
+                      `items` is empty or smaller than the given `limit`.
+        "400":
+          description: "Malformed request"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "4XX":
+          description: "Unexpected error"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "5XX":
+          description: "Unexpected error"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
 components:
   schemas:
     Artifact:
       type: object
       title: "Artifact Object"
       description: >
-        The metadata associated with an artifact.
+        An artifact in the archive.
       required:
         - id
         - title
         - summary
+        - description
         - files
         - links
         - people
         - identities
-        - fromYear
+        - from_year
+        - to_year
         - decades
         - aliases
       properties:
@@ -76,6 +169,7 @@ components:
             A short summary of the artifact.
         description:
           type: string
+          nullable: true
           description: >
             A longer description of the artifact.
         files:
@@ -87,17 +181,19 @@ components:
             type: object
             required:
               - name
-              - fileName
+              - filename
+              - media_type
               - hash
-              - hashAlgorithm
+              - hash_algorithm
               - url
+              - lang
               - aliases
             properties:
               name:
                 type: string
                 description: >
                   The human-readable name of the file.
-              fileName:
+              filename:
                 type: string
                 description: >
                   The filename of the file, with an appropriate file extension.
@@ -107,24 +203,30 @@ components:
                   can be uniquely identified by the combination of its artifact
                   ID and its filename.
 
-                  The `fileName` of a file may change at any time, at which
+                  The `filename` of a file may change at any time, at which
                   point it will be appended to the `aliases` array. Exceptions
                   to this rule may be made in exceptional circumstances for the
                   sake of privacy.
-              mediaType:
+              media_type:
                 type: string
+                nullable: true
                 description: >
                   The IANA media type of the file.
 
-                  This may not necessarily be a media type associated with the
-                  file extension in `fileName`. For example, the file extension
-                  may be `.bib` and the `mediaType` may be `text/plain`.
+                  This may be `null` if the media type is unknown or there is no
+                  suitable media type. In some of these cases, the file contents
+                  may be better inferred from the file extension in `filename`.
+
+                  The media type is not required to agree with the file
+                  extension of `filename`. It also may be the case that the
+                  media type and file extension agree, but one is more or less
+                  specific than the other, such as with `.bib` and `text/plain`.
 
                   The *type* component (`application`, `text`, `image`, etc.)
                   will always be a registered IANA type, but the *subtype*
                   component (`pdf`, `png`, `html`, etc.) may be either a
                   registered subtype or an unofficial subtype in common use. The
-                  `mediaType` may or may not include *suffix* and *parameter*
+                  `media_type` may or may not include *suffix* and *parameter*
                   components.
               hash:
                 type: string
@@ -133,9 +235,9 @@ components:
                   The cryptographic hash of the file encoded as a hexadecimal
                   string.
 
-                  The `hashAlgorithm` property contains the hash algorithm used
+                  The `hash_algorithm` property contains the hash algorithm used
                   to generate this hash.
-              hashAlgorithm:
+              hash_algorithm:
                 type: string
                 description: >
                   The cryptographic hash algorithm used to generated the `hash`
@@ -157,17 +259,21 @@ components:
                 format: uri
               lang:
                 type: string
+                nullable: true
                 description: >
-                  The natural language of this file, if applicable, as an [RFC
+                  The natural language of this file, as an [RFC
                   5646](https://datatracker.ietf.org/doc/html/rfc5646) language
                   tag.
+
+                  This may be `null` if the language is unknown or if a natural
+                  language is not applicable (e.g. a photo).
               aliases:
                 type: array
                 description: >
-                  An array of aliases for the `fileName`.
+                  An array of aliases for the `filename`.
 
                   Filename aliases in this array may be used in place of the
-                  `fileName` for API requests.
+                  `filename` for API requests.
                 items:
                   type: string
         links:
@@ -201,16 +307,17 @@ components:
             The personal identity labels associated with this artifact.
           items:
             type: string
-        fromYear:
+        from_year:
           type: integer
           description: >
             The year the creative work associated with this artifact was
             published or first released.
 
-            If `toYear` is also specified, this represents the start of a range
+            If `to_year` is also specified, this represents the start of a range
             of years.
-        toYear:
+        to_year:
           type: integer
+          nullable: true
           description: >
             The final year that a creative work associated with this artifact
             was published or first released, representing the end of a range of
@@ -255,9 +362,16 @@ components:
         anyway. In addition, URLs tend to be fragile and not very stable over
         longer periods because of organizational and documentation changes and
         descriptions might easily get out of sync.
+      required:
+        - type
+        - title
+        - status
+        - detail
+        - instance
       properties:
         type:
           type: string
+          nullable: true
           format: uri-reference
           description: >
             A relative URI reference that identifies the problem type within the
@@ -269,6 +383,7 @@ components:
           example: "/problems/artifact-not-found"
         title:
           type: string
+          nullable: true
           description: >
             A short, human-readable summary of the problem type.
 
@@ -277,6 +392,7 @@ components:
           example: "Artifact not found"
         status:
           type: integer
+          nullable: true
           description: >
             The HTTP status code generated by the origin server for this
             occurrence of the problem.
@@ -287,6 +403,7 @@ components:
           example: 404
         detail:
           type: string
+          nullable: true
           description: >
             A human-readable explanation specific to this occurrence of the
             problem.
@@ -296,6 +413,7 @@ components:
           example: "Artifact with ID 'conquest-of-revachol' not found"
         instance:
           type: string
+          nullable: true
           format: uri-reference
           description: >
             A relative URI reference that identifies the specific occurrence of
