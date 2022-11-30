@@ -21,8 +21,7 @@ paths:
           in: path
           required: true
           description: >
-            The unique ID of the artifact, also sometimes called the "artifact
-            slug."
+            The unique ID of the artifact.
           example: "orlando-the-asexual-manifesto"
           schema:
             type: string
@@ -153,11 +152,7 @@ components:
         id:
           type: string
           description: >
-            The artifact ID, also called the "artifact slug."
-
-            The `id` of an artifact may change at any time, at which point it
-            will be appended to the `aliases` array. Exceptions to this rule may
-            be made in exceptional circumstances for the sake of privacy.
+            The artifact ID.
         title:
           type: string
           description: >
@@ -198,15 +193,9 @@ components:
                 description: >
                   The filename of the file, with an appropriate file extension.
 
-                  This uniquely identifies a file among all the files associated
-                  with the same artifact, meaning than any file in the archive
-                  can be uniquely identified by the combination of its artifact
-                  ID and its filename.
-
-                  The `filename` of a file may change at any time, at which
-                  point it will be appended to the `aliases` array. Exceptions
-                  to this rule may be made in exceptional circumstances for the
-                  sake of privacy.
+                  A filename is unique among all the files in the same artifact.
+                  A filename may change, at which point the old filename may be
+                  appended to `aliases`.
               media_type:
                 type: string
                 nullable: true
