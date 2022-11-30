@@ -16,13 +16,15 @@ paths:
   /artifacts/{id}:
     get:
       summary: "Get an artifact"
+      description: >
+        Get a single artifact in the archive by its ID.
       parameters:
         - name: id
           in: path
           required: true
           description: >
             The unique ID of the artifact.
-          example: "orlando-the-asexual-manifesto"
+          example: "PZsGT3uJ1FXk"
           schema:
             type: string
       responses:
@@ -53,6 +55,11 @@ paths:
   /artifacts/:
     get:
       summary: "List artifacts"
+      description: >
+        Page through artifacts in the archive.
+
+        The order of the returned artifacts when paging is consistent, but how
+        they are sorted (by date, by title, etc.) is unspecified.
       parameters:
         - name: "cursor"
           in: "query"
@@ -61,7 +68,7 @@ paths:
 
             Each page (except the final page) includes a cursor which can be
             passed as a query argument to get the next page.
-          example: "cnRfhqxVunk"
+          example: "XGCOVrRDqvKnqsVONWpehwGz6"
           schema:
             type: string
         - name: "limit"
@@ -153,6 +160,10 @@ components:
           type: string
           description: >
             The artifact ID.
+
+            Artifact IDs are stable; they don't change once assigned. An
+            artifact may be removed from the archive, but its ID will never be
+            recycled.
         title:
           type: string
           description: >
