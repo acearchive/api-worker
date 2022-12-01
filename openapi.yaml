@@ -5,6 +5,8 @@ info:
   description: |
     An API for querying metadata about artifacts in [Ace
     Archive](https://acearchive.lgbt).
+
+    You do not need an API key to use this API.
   contact:
     url: "https://github.com/acearchive/acearchive.lgbt/issues"
     email: "contact@acearchive.lgbt"
@@ -155,7 +157,6 @@ components:
         - identities
         - from_year
         - decades
-        - aliases
       properties:
         id:
           type: string
@@ -204,7 +205,6 @@ components:
               - hash
               - hash_algorithm
               - url
-              - aliases
             properties:
               name:
                 type: string
@@ -216,9 +216,8 @@ components:
                 description: |
                   The filename of the file, with an appropriate file extension.
 
-                  A filename is unique among all the files in the same artifact.
-                  A filename may change, at which point the old filename may be
-                  appended to `aliases`.
+                  No two files in the same artifact will ever have the same
+                  filename. However, a filename can change at any time.
                 example: "the-asexual-manifesto.pdf"
               media_type:
                 type: string
@@ -284,17 +283,6 @@ components:
                   This may be excluded if the language is unknown or if a
                   natural language is not applicable (e.g. a photo).
                 example: "en"
-              aliases:
-                type: array
-                description: |
-                  An array of aliases for the `filename`.
-
-                  Filename aliases in this array may be used in place of the
-                  `filename` for API requests.
-                example:
-                  - "manifesto.pdf"
-                items:
-                  type: string
         links:
           type: array
           description: |
@@ -363,17 +351,6 @@ components:
           items:
             type: integer
             multipleOf: 10
-        aliases:
-          type: array
-          description: |
-            An array of aliases for the artifact `id`.
-
-            Artifact ID aliases in this array may be used in place of the `id`
-            for API requests.
-          example:
-            - "orlando-manifesto"
-          items:
-            type: string
     Problem:
       type: object
       title: "Problem"
