@@ -2,7 +2,7 @@ openapi: "3.1.0"
 info:
   version: "0.1.0"
   title: "Ace Archive API"
-  description: >
+  description: |
     An API for querying metadata about artifacts in [Ace
     Archive](https://acearchive.lgbt).
   contact:
@@ -17,13 +17,13 @@ paths:
   /artifacts/{id}:
     get:
       summary: "Get an artifact"
-      description: >
+      description: |
         Get a single artifact in the archive by its ID.
       parameters:
         - name: id
           in: path
           required: true
-          description: >
+          description: |
             The unique ID of the artifact.
           example: "PZsGT3uJ1FXk"
           schema:
@@ -50,7 +50,7 @@ paths:
   /artifacts/:
     get:
       summary: "List artifacts"
-      description: >
+      description: |
         Page through artifacts in the archive.
 
         The order of the returned artifacts when paging is consistent, but how
@@ -58,7 +58,7 @@ paths:
       parameters:
         - name: "cursor"
           in: "query"
-          description: >
+          description: |
             An opaque string cursor for pagination.
 
             Each page (except the final page) includes a cursor which can be
@@ -68,7 +68,7 @@ paths:
             type: string
         - name: "limit"
           in: "query"
-          description: >
+          description: |
             The maximum number of artifacts to return in a page.
 
             The size of a page may be smaller than this value, even if it's not
@@ -91,7 +91,7 @@ paths:
                 properties:
                   items:
                     type: array
-                    description: >
+                    description: |
                       The artifacts in the current page.
 
                       If this array is empty or smaller than the given `limit`,
@@ -103,7 +103,7 @@ paths:
                   next_cursor:
                     type: string
                     nullable: true
-                    description: >
+                    description: |
                       An opaque string cursor for pagination.
 
                       This cursor can be passed as a query argument to get the
@@ -142,7 +142,7 @@ components:
     Artifact:
       type: object
       title: "Artifact Object"
-      description: >
+      description: |
         An artifact in the archive.
       required:
         - id
@@ -160,7 +160,7 @@ components:
       properties:
         id:
           type: string
-          description: >
+          description: |
             The artifact ID.
 
             Artifact IDs are stable; they don't change once assigned. An
@@ -169,27 +169,27 @@ components:
           example: "MKbNWmmhCog6"
         title:
           type: string
-          description: >
+          description: |
             The title of the artifact, which may use CommonMark-style asterisk
             syntax to denote `<cite></cite>` markup.
           example: "*The Asexual Manifesto*"
         summary:
           type: string
-          description: >
+          description: |
             A short summary of the artifact.
-          example: >
+          example: >-
             A paper by the Asexual Caucus of the New York Radical Feminists.
         description:
           type: string
           nullable: true
-          description: >
+          description: |
             A longer description of the artifact.
-          example: >
+          example: >-
             A paper by the Asexual Caucus of the New York Radical Feminists in
             which Lisa Orlando outlines a definition asexuality.
         files:
           type: array
-          description: >
+          description: |
             The files associated with this artifact.
           uniqueItems: true
           items:
@@ -206,12 +206,12 @@ components:
             properties:
               name:
                 type: string
-                description: >
+                description: |
                   The human-readable name of the file.
                 example: "Digital Scan"
               filename:
                 type: string
-                description: >
+                description: |
                   The filename of the file, with an appropriate file extension.
 
                   A filename is unique among all the files in the same artifact.
@@ -221,7 +221,7 @@ components:
               media_type:
                 type: string
                 nullable: true
-                description: >
+                description: |
                   The IANA media type of the file.
 
                   This may be `null` if the media type is unknown or there is no
@@ -243,7 +243,7 @@ components:
               hash:
                 type: string
                 pattern: "^[0-9a-f]+$"
-                description: >
+                description: |
                   The cryptographic hash of the file encoded as a hexadecimal
                   string.
 
@@ -252,7 +252,7 @@ components:
                 example: "f907ed09addad95bd17de1efe76c7a624ba8144f0e2165edaf832447cded5f54"
               hash_algorithm:
                 type: string
-                description: >
+                description: |
                   The cryptographic hash algorithm used to generated the `hash`
                   of the file.
 
@@ -268,14 +268,14 @@ components:
                   - "sha2-256"
               url:
                 type: string
-                description: >
+                description: |
                   The URL where this file can be downloaded.
                 example: "https://files.acearchive.lgbt/artifacts/orlando-the-asexual-manifesto/the-asexual-manifesto.pdf"
                 format: uri
               lang:
                 type: string
                 nullable: true
-                description: >
+                description: |
                   The natural language of this file, as an [RFC
                   5646](https://datatracker.ietf.org/doc/html/rfc5646) language
                   tag.
@@ -285,7 +285,7 @@ components:
                 example: "en"
               aliases:
                 type: array
-                description: >
+                description: |
                   An array of aliases for the `filename`.
 
                   Filename aliases in this array may be used in place of the
@@ -296,7 +296,7 @@ components:
                   type: string
         links:
           type: array
-          description: >
+          description: |
             The links associated with this artifact.
           items:
             type: object
@@ -306,18 +306,18 @@ components:
             properties:
               name:
                 type: string
-                description: >
+                description: |
                   The human-readable name of this link.
                 example: "Internet Archive"
               url:
                 type: string
-                description: >
+                description: |
                   The URL the link points to.
                 example: "https://archive.org/details/asexualmanifestolisaorlando"
                 format: uri
         people:
           type: array
-          description: >
+          description: |
             The people associated with this artifact.
           example:
             - "Lisa Orlando"
@@ -326,7 +326,7 @@ components:
             type: string
         identities:
           type: array
-          description: >
+          description: |
             The personal identity labels associated with this artifact.
           example:
             - "asexual"
@@ -335,7 +335,7 @@ components:
             type: string
         from_year:
           type: integer
-          description: >
+          description: |
             The year the creative work associated with this artifact was
             published or first released.
 
@@ -345,14 +345,14 @@ components:
         to_year:
           type: integer
           nullable: true
-          description: >
+          description: |
             The final year that a creative work associated with this artifact
             was published or first released, representing the end of a range of
             years.
           example: 1980
         decades:
           type: array
-          description: >
+          description: |
             The list of decades in which a creative work associated with this
             artifact was published or first released.
 
@@ -365,7 +365,7 @@ components:
             multipleOf: 10
         aliases:
           type: array
-          description: >
+          description: |
             An array of aliases for the artifact `id`.
 
             Artifact ID aliases in this array may be used in place of the `id`
@@ -376,7 +376,7 @@ components:
     Problem:
       type: object
       title: "Problem Object"
-      description: >
+      description: |
         An [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807)
         `application/problem+json` object.
 
@@ -405,7 +405,7 @@ components:
           type: string
           nullable: true
           format: uri-reference
-          description: >
+          description: |
             A relative URI reference that identifies the problem type within the
             scope of this API.
 
@@ -416,7 +416,7 @@ components:
         title:
           type: string
           nullable: true
-          description: >
+          description: |
             A short, human-readable summary of the problem type.
 
             This summary is written in English, is typically not localized, and
@@ -425,7 +425,7 @@ components:
         status:
           type: integer
           nullable: true
-          description: >
+          description: |
             The HTTP status code generated by the origin server for this
             occurrence of the problem.
           format: int32
@@ -436,7 +436,7 @@ components:
         detail:
           type: string
           nullable: true
-          description: >
+          description: |
             A human-readable explanation specific to this occurrence of the
             problem.
 
@@ -447,7 +447,7 @@ components:
           type: string
           nullable: true
           format: uri-reference
-          description: >
+          description: |
             A relative URI reference that identifies the specific occurrence of
             the problem.
 
