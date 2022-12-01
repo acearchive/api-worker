@@ -73,11 +73,11 @@ paths:
 
             The size of a page may be smaller than this value, even if it's not
             the final page.
-          example: 100
+          example: 50
           schema:
             type: integer
             format: int32
-            default: 20
+            default: 10
       responses:
         "200":
           description: "OK"
