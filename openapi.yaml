@@ -148,6 +148,7 @@ components:
         - id
         - title
         - summary
+        - url
         - files
         - links
         - people
@@ -184,6 +185,12 @@ components:
           example: >-
             A paper by the Asexual Caucus of the New York Radical Feminists in
             which Lisa Orlando outlines a definition asexuality.
+        url:
+          type: string
+          format: uri
+          description: |
+            The URL of the artifact page on the Ace Archive site.
+          example: "https://acearchive.lgbt/artifacts/orlando-the-asexual-manifesto"
         files:
           type: array
           description: |
@@ -263,10 +270,10 @@ components:
                   - "sha2-256"
               url:
                 type: string
+                format: uri
                 description: |
                   The URL where this file can be downloaded.
                 example: "https://files.acearchive.lgbt/artifacts/orlando-the-asexual-manifesto/the-asexual-manifesto.pdf"
-                format: uri
               lang:
                 type: string
                 description: |
