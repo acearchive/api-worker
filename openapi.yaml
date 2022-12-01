@@ -141,7 +141,7 @@ components:
   schemas:
     Artifact:
       type: object
-      title: "Artifact Object"
+      title: "Artifact"
       description: |
         An artifact in the archive.
       required:
@@ -368,7 +368,7 @@ components:
             type: string
     Problem:
       type: object
-      title: "Problem Object"
+      title: "Problem"
       description: |
         An [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807)
         `application/problem+json` object.
@@ -399,7 +399,7 @@ components:
 
             This summary is written in English, is typically not localized, and
             intended to be read by engineers.
-          example: "Artifact not found"
+          example: "Artifact Not Found"
         status:
           type: integer
           description: |
@@ -418,7 +418,7 @@ components:
 
             This explanation is written in English, is typically not localized,
             and intended to be read by engineers.
-          example: "Artifact with ID 'conquest-of-revachol' not found"
+          example: "Artifact with ID 'Gb0Zb5T28fXT' not found"
         instance:
           type: string
           format: uri-reference
@@ -428,4 +428,4 @@ components:
 
             This URI reference should not be expected to be dereferenceable or
             globally unique.
-          example: "/artifacts/conquest-of-revachol"
+          example: "/artifacts/Gb0Zb5T28fXT"
