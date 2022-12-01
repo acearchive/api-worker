@@ -370,7 +370,8 @@ components:
 
             Artifact ID aliases in this array may be used in place of the `id`
             for API requests.
-          example: "orlando-manifesto"
+          example:
+            - "orlando-manifesto"
           items:
             type: string
     Problem:
