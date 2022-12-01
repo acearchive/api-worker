@@ -35,23 +35,17 @@ paths:
               schema:
                 $ref: "#/components/schemas/Artifact"
         "404":
-          description: "Artifact not found"
+          description: "Artifact Not Found"
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
         "4XX":
-          description: "Unexpected error"
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
+          $ref: "#/components/responses/UnexpectedError"
         "5XX":
-          description: "Unexpected error"
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
+          $ref: "#/components/responses/UnexpectedError"
   /artifacts/:
     get:
       summary: "List artifacts"
@@ -118,24 +112,31 @@ paths:
                       If this is not `null`, then there are more pages, even if
                       `items` is empty or smaller than the given `limit`.
         "400":
-          description: "Malformed request"
+          description: "Malformed Request"
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
         "4XX":
-          description: "Unexpected error"
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
+          $ref: "#/components/responses/UnexpectedError"
         "5XX":
-          description: "Unexpected error"
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
+          $ref: "#/components/responses/UnexpectedError"
 components:
+  responses:
+    TooManyRequests:
+      description: "Too Many Requests"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    UnexpectedError:
+      description: "Unexpected Error"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
   schemas:
     Artifact:
       type: object
