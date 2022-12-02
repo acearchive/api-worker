@@ -48,8 +48,8 @@ export const listArtifacts = async ({
   kv,
   method,
 }: {
+  limit: number;
   cursor?: string;
-  limit?: number;
   kv: KVNamespace;
   method: "GET" | "HEAD";
 }): Promise<Response> => {

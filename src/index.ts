@@ -8,6 +8,7 @@ interface Env {
 }
 
 const majorApiVersion = 0;
+const defaultPaginationLimit = 10;
 
 const router = Router({ base: `/v${majorApiVersion}` });
 
@@ -30,12 +31,16 @@ router.all("/artifacts/", ({ method, params }, env: Env) => {
   }
 
   if (params === undefined) {
-    return listArtifacts({ kv: env.ARTIFACTS_KV, method });
+    return listArtifacts({
+      limit: defaultPaginationLimit,
+      kv: env.ARTIFACTS_KV,
+      method,
+    });
   }
 
   const { limit: rawLimit, cursor: rawCursor } = params;
 
-  let limit: number | undefined = undefined;
+  let limit: number = defaultPaginationLimit;
   let cursor: string | undefined = undefined;
 
   if (!isBlank(rawLimit)) {

@@ -66,6 +66,7 @@ export const ErrorResponse = {
       detail: `Artifact with ID '${artifactId}' not found.`,
       instance: `/artifacts/${artifactId}`,
     }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unexpectedError: (reason: any): Response =>
     newErrorResponse({
       type: "/problems/unexpected-error",
