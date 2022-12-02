@@ -43,8 +43,7 @@
     "wrangler": "^2.1.10"
   },
   "dependencies": {
-    "artifact-submit-action": "github:acearchive/artifact-submit-action#artifact-id",
-    "base64-arraybuffer": "^1.0.2",
-    "itty-router": "^2.6.6"
+    "itty-router": "^2.6.6",
+    "rfc4648": "^1.5.2"
   }
 }

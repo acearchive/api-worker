@@ -1,7 +1,4 @@
-import {
-  encode as base64Encode,
-  decode as base64Decode,
-} from "base64-arraybuffer";
+import { base64url } from "rfc4648";
 
 const algorithmName = "AES-GCM";
 const keyLenBits = 128;
@@ -49,13 +46,13 @@ const encodeCiphertext = ({
   const output = new Uint8Array(ciphertext.byteLength + iv.length);
   output.set(iv, 0);
   output.set(new Uint8Array(ciphertext), iv.length);
-  return base64Encode(output);
+  return base64url.stringify(output, { pad: true });
 };
 
 const decodeCiphertext = (
   encoded: string
 ): { ciphertext: ArrayBuffer; iv: ArrayBuffer } => {
-  const decoded = base64Decode(encoded);
+  const decoded = base64url.parse(encoded);
 
   return {
     iv: decoded.slice(0, ivLengthBytes),
