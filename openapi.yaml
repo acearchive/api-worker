@@ -65,7 +65,7 @@ paths:
 
             Each page (except the final page) includes a cursor which can be
             passed as a query argument to get the next page.
-          example: "cXpQS3kwV09qbDRYV0k="
+          example: "eUJjR1ZoVWtlb2g5a2ptTVpFdjdKbnVPSzY1"
           schema:
             type: string
         - name: "limit"
@@ -80,6 +80,7 @@ paths:
             type: integer
             format: int32
             default: 10
+            maximum: 250
       responses:
         "200":
           description: "OK"
@@ -113,7 +114,7 @@ paths:
                       If there is a `next_cursor`, then there are more pages,
                       even if `items` is empty or smaller than the given
                       `limit`.
-                    example: "cXpQS3kwV09qbDRYV0k="
+                    example: "eUJjR1ZoVWtlb2g5a2ptTVpFdjdKbnVPSzY1"
         "400":
           description: "Malformed Request"
           content:

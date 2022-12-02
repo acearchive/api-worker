@@ -1,11 +1,15 @@
 import { ErrorResponse } from "./response";
 import { ArtifactData, KeyVersion, toApi } from "./model";
 import { OKResponse } from "./response";
-import { Artifact, ArtifactList } from "./api";
-import { decodeCursor, encodeCursor } from "./cursor";
+import {
+  ArtifactCursor,
+  decodeCursor,
+  nextPageFromCursor,
+  unexpectedCursorErrorDetail,
+} from "./cursor";
 import { Env } from ".";
 
-const listArtifactsPrefix = `artifacts:v${KeyVersion.artifacts}:`;
+const artifactsListKey = `artifacts:v${KeyVersion.artifacts}:`;
 
 const toArtifactKey = (artifactId: string): string =>
   `artifacts:v${KeyVersion.artifacts}:${artifactId}`;
@@ -42,16 +46,16 @@ export const listArtifacts = async ({
   env,
   method,
 }: {
-  limit: number;
   cursor?: string;
+  limit: number;
   env: Env;
   method: "GET" | "HEAD";
 }): Promise<Response> => {
-  let decodedCursor: string | undefined = undefined;
+  let cursor: ArtifactCursor | undefined = undefined;
 
   if (encodedCursor !== undefined) {
     const cursorDecodeResult = await decodeCursor({
-      cursorFromUser: encodedCursor,
+      cursor: encodedCursor,
       rawEncryptionKey: env.CURSOR_ENCRYPTION_KEY,
     });
 
@@ -62,36 +66,25 @@ export const listArtifacts = async ({
       );
     }
 
-    decodedCursor = cursorDecodeResult.decoded;
+    cursor = cursorDecodeResult.cursor;
   }
 
-  const listResult = await env.ARTIFACTS_KV.list({
-    prefix: listArtifactsPrefix,
-    cursor: decodedCursor,
-    limit: limit,
+  const artifactList: ReadonlyArray<ArtifactData> | undefined | null =
+    await env.ARTIFACTS_KV.get(artifactsListKey, {
+      type: "json",
+    });
+
+  if (artifactList === undefined || artifactList === null) {
+    // There is no reason why this KV pair should not exist.
+    throw new Error(unexpectedCursorErrorDetail);
+  }
+
+  const responseObj = await nextPageFromCursor({
+    artifacts: artifactList,
+    limit,
+    cursor,
+    env,
   });
-
-  const artifacts: Array<Artifact> = [];
-
-  for (const listKey of listResult.keys) {
-    const artifactData: ArtifactData | null | undefined =
-      await env.ARTIFACTS_KV.get(listKey.name, { type: "json" });
-
-    if (artifactData === null || artifactData === undefined) continue;
-
-    artifacts.push(toApi(artifactData));
-  }
-
-  const responseObj: ArtifactList = {
-    items: artifacts,
-    next_cursor:
-      listResult.list_complete || listResult.cursor === undefined
-        ? undefined
-        : await encodeCursor({
-            cursorFromUpstream: listResult.cursor,
-            rawEncryptionKey: env.CURSOR_ENCRYPTION_KEY,
-          }),
-  };
 
   switch (method) {
     case "HEAD":
