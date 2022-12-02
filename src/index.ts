@@ -1,10 +1,11 @@
 import { Router } from "itty-router";
 import { getArtifact, listArtifacts } from "./handlers";
 import { ErrorResponse } from "./response";
-import { isBase64, isBlank, toInteger as isInteger } from "./validation";
+import { isBlank, toInteger as isInteger } from "./validation";
 
-interface Env {
+export interface Env {
   ARTIFACTS_KV: KVNamespace;
+  CURSOR_ENCRYPTION_KEY: string;
 }
 
 const majorApiVersion = 0;
@@ -33,7 +34,7 @@ router.all("/artifacts/", ({ method, query }, env: Env) => {
   if (query === undefined) {
     return listArtifacts({
       limit: defaultPaginationLimit,
-      kv: env.ARTIFACTS_KV,
+      env,
       method,
     });
   }
@@ -41,7 +42,6 @@ router.all("/artifacts/", ({ method, query }, env: Env) => {
   const { limit: rawLimit, cursor: rawCursor } = query;
 
   let limit: number = defaultPaginationLimit;
-  let cursor: string | undefined = undefined;
 
   if (!isBlank(rawLimit)) {
     const result = isInteger(rawLimit);
@@ -56,18 +56,9 @@ router.all("/artifacts/", ({ method, query }, env: Env) => {
     limit = result.integer;
   }
 
-  if (!isBlank(rawCursor)) {
-    if (!isBase64(rawCursor)) {
-      return ErrorResponse.malformedRequest(
-        "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
-        `/artifacts/?cursor=${rawCursor}`
-      );
-    }
+  const cursor = isBlank(rawCursor) ? undefined : rawCursor;
 
-    cursor = rawCursor;
-  }
-
-  return listArtifacts({ limit, cursor, kv: env.ARTIFACTS_KV, method });
+  return listArtifacts({ limit, cursor, env, method });
 });
 
 router.all("*", ({ url }) => ErrorResponse.endpointNotFound(new URL(url)));

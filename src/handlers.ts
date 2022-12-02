@@ -2,6 +2,8 @@ import { ErrorResponse } from "./response";
 import { ArtifactData, KeyVersion, toApi } from "./model";
 import { OKResponse } from "./response";
 import { Artifact, ArtifactList } from "./api";
+import { decodeCursor, encodeCursor } from "./cursor";
+import { Env } from ".";
 
 const listArtifactsPrefix = `artifacts:v${KeyVersion.artifacts}:`;
 
@@ -34,38 +36,46 @@ export const getArtifact = async ({
   }
 };
 
-// We want to base64-encode whatever cursor Cloudflare gives us to hint that it
-// is opaque to end-users and should not be parsed/interpreted.
-//
-// While the cursors we get from Cloudflare as of time of writing already seem
-// to be fairly opaque, that's not under our control.
-const encodeCursor = btoa;
-const decodeCursor = atob;
-
 export const listArtifacts = async ({
-  cursor,
+  cursor: encodedCursor,
   limit,
-  kv,
+  env,
   method,
 }: {
   limit: number;
   cursor?: string;
-  kv: KVNamespace;
+  env: Env;
   method: "GET" | "HEAD";
 }): Promise<Response> => {
-  const listResult = await kv.list({
+  let decodedCursor: string | undefined = undefined;
+
+  if (encodedCursor !== undefined) {
+    const cursorDecodeResult = await decodeCursor({
+      cursorFromUser: encodedCursor,
+      rawEncryptionKey: env.CURSOR_ENCRYPTION_KEY,
+    });
+
+    if (!cursorDecodeResult.valid) {
+      return ErrorResponse.malformedRequest(
+        "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
+        `/artifacts/?cursor=${encodedCursor}`
+      );
+    }
+
+    decodedCursor = cursorDecodeResult.decoded;
+  }
+
+  const listResult = await env.ARTIFACTS_KV.list({
     prefix: listArtifactsPrefix,
-    cursor: cursor === undefined ? undefined : decodeCursor(cursor),
+    cursor: decodedCursor,
     limit: limit,
   });
 
   const artifacts: Array<Artifact> = [];
 
   for (const listKey of listResult.keys) {
-    const artifactData: ArtifactData | null | undefined = await kv.get(
-      listKey.name,
-      { type: "json" }
-    );
+    const artifactData: ArtifactData | null | undefined =
+      await env.ARTIFACTS_KV.get(listKey.name, { type: "json" });
 
     if (artifactData === null || artifactData === undefined) continue;
 
@@ -77,7 +87,10 @@ export const listArtifacts = async ({
     next_cursor:
       listResult.list_complete || listResult.cursor === undefined
         ? undefined
-        : encodeCursor(listResult.cursor),
+        : await encodeCursor({
+            cursorFromUpstream: listResult.cursor,
+            rawEncryptionKey: env.CURSOR_ENCRYPTION_KEY,
+          }),
   };
 
   switch (method) {

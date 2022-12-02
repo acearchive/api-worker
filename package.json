@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "artifact-submit-action": "github:acearchive/artifact-submit-action#artifact-id",
+    "base64-arraybuffer": "^1.0.2",
     "itty-router": "^2.6.6"
   }
 }
