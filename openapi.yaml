@@ -65,7 +65,7 @@ paths:
 
             Each page (except the final page) includes a cursor which can be
             passed as a query argument to get the next page.
-          example: "XGCOVrRDqvKnqsVONWpehwGz6"
+          example: "cXpQS3kwV09qbDRYV0k="
           schema:
             type: string
         - name: "limit"
@@ -113,7 +113,7 @@ paths:
                       If there is a `next_cursor`, then there are more pages,
                       even if `items` is empty or smaller than the given
                       `limit`.
-                    example: "XGCOVrRDqvKnqsVONWpehwGz6"
+                    example: "cXpQS3kwV09qbDRYV0k="
         "400":
           description: "Malformed Request"
           content:
@@ -403,7 +403,7 @@ components:
 
             This explanation is written in English, is typically not localized,
             and intended to be read by engineers.
-          example: "Artifact with ID 'Gb0Zb5T28fXT' not found"
+          example: "Artifact with ID 'Gb0Zb5T28fXT' not found."
         instance:
           type: string
           format: uri-reference

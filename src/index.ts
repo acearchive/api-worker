@@ -1,46 +1,79 @@
 import { Router } from "itty-router";
-import { error, methodNotAllowedError } from "./error";
+import { getArtifact, listArtifacts } from "./handlers";
+import { ErrorResponse } from "./response";
+import { isBase64, isBlank, toInteger as isInteger } from "./validation";
+
+interface Env {
+  ARTIFACTS_KV: KVNamespace;
+}
 
 const majorApiVersion = 0;
 
 const router = Router({ base: `/v${majorApiVersion}` });
 
-router
-  .head("/artifacts/", () => new Response("TODO"))
-  .get("/artifacts/", () => new Response("TODO"))
-  .all("/artifacts/", (req) =>
-    methodNotAllowedError(req.method, ["GET", "HEAD"])
-  );
+router.all("/artifacts/:id", ({ params, method }, env: Env) => {
+  if (method !== "GET" && method !== "HEAD") {
+    return ErrorResponse.methodNotAllowed(method, ["GET", "HEAD"]);
+  }
 
-router
-  .head("/artifacts/:id", () => new Response("TODO"))
-  .get("/artifacts/:id", () => new Response("TODO"))
-  .all("/artifacts/:id", (req) =>
-    methodNotAllowedError(req.method, ["GET", "HEAD"])
-  );
+  const artifactId = params?.id;
+  if (artifactId === undefined) {
+    throw new Error("Failed to parse URL path argument.");
+  }
+
+  return getArtifact({ artifactId, kv: env.ARTIFACTS_KV, method });
+});
+
+router.all("/artifacts/", ({ method, params }, env: Env) => {
+  if (method !== "GET" && method !== "HEAD") {
+    return ErrorResponse.methodNotAllowed(method, ["GET", "HEAD"]);
+  }
+
+  if (params === undefined) {
+    return listArtifacts({ kv: env.ARTIFACTS_KV, method });
+  }
+
+  const { limit: rawLimit, cursor: rawCursor } = params;
+
+  let limit: number | undefined = undefined;
+  let cursor: string | undefined = undefined;
+
+  if (!isBlank(rawLimit)) {
+    const result = isInteger(rawLimit);
+
+    if (!result.valid) {
+      return ErrorResponse.malformedRequest(
+        "The 'limit' parameter must be an integer.",
+        `/artifacts/?limit=${rawLimit}`
+      );
+    }
+
+    limit = result.integer;
+  }
+
+  if (!isBlank(rawCursor)) {
+    if (!isBase64(rawCursor)) {
+      return ErrorResponse.malformedRequest(
+        "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
+        `/artifacts/?cursor=${rawCursor}`
+      );
+    }
+
+    cursor = rawCursor;
+  }
+
+  return listArtifacts({ limit, cursor, kv: env.ARTIFACTS_KV, method });
+});
+
+router.all("*", ({ url }) => ErrorResponse.endpointNotFound(new URL(url)));
 
 const rootRouter = Router();
 
 rootRouter.all(`/v${majorApiVersion}/*`, router.handle);
 
-rootRouter.all("*", (req) => {
-  const url = new URL(req.url);
-  return error(404, {
-    type: "/problems/endpoint-not-found",
-    title: "Endpoint Not Found",
-    detail: `No such endpoint: '${url.pathname}'`,
-    instance: url.pathname,
-  });
-});
+rootRouter.all("*", ({ url }) => ErrorResponse.endpointNotFound(new URL(url)));
 
 export default {
-  async fetch(request: Request): Promise<Response> {
-    return router.handle(request).catch((reason) =>
-      error(500, {
-        type: "/problems/unexpected-error",
-        title: "Unexpected Error",
-        detail: reason.toString(),
-      })
-    );
-  },
+  fetch: (request: Request, env: Env) =>
+    rootRouter.handle(request, env).catch(ErrorResponse.unexpectedError),
 };

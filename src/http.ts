@@ -8,3 +8,8 @@ export type ResponseHeaders = {
 };
 
 export type Method = "GET" | "HEAD" | "POST" | "PUT" | "DELETE";
+
+export const ContentType = {
+  Json: "application/json",
+  Problem: "application/problem+json",
+} as const;
