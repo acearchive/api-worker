@@ -25,12 +25,12 @@ router.all("/artifacts/:id", ({ params, method }, env: Env) => {
   return getArtifact({ artifactId, kv: env.ARTIFACTS_KV, method });
 });
 
-router.all("/artifacts/", ({ method, params }, env: Env) => {
+router.all("/artifacts/", ({ method, query }, env: Env) => {
   if (method !== "GET" && method !== "HEAD") {
     return ErrorResponse.methodNotAllowed(method, ["GET", "HEAD"]);
   }
 
-  if (params === undefined) {
+  if (query === undefined) {
     return listArtifacts({
       limit: defaultPaginationLimit,
       kv: env.ARTIFACTS_KV,
@@ -38,7 +38,7 @@ router.all("/artifacts/", ({ method, params }, env: Env) => {
     });
   }
 
-  const { limit: rawLimit, cursor: rawCursor } = params;
+  const { limit: rawLimit, cursor: rawCursor } = query;
 
   let limit: number = defaultPaginationLimit;
   let cursor: string | undefined = undefined;

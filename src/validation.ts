@@ -1,5 +1,5 @@
-export const isBlank = (input: string): boolean =>
-  input !== "" && input.trim() !== "";
+export const isBlank = (input: string | undefined | null): boolean =>
+  input === undefined || input === null || input === "" || input.trim() === "";
 
 export const isBase64 = (input: string): boolean => {
   try {
