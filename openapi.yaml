@@ -6,6 +6,9 @@ info:
     An API for querying metadata about artifacts in [Ace
     Archive](https://acearchive.lgbt).
 
+    This API is currently experimental. The API is `v0`, which means that
+    **backwards-incompatible** changes could happen **at any time**.
+
     You do not need an API key to use this API.
   contact:
     url: "https://github.com/acearchive/acearchive.lgbt/issues"
