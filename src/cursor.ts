@@ -115,11 +115,14 @@ export const nextPageFromCursor = async ({
 // We encrypt the cursor before returning it to the client.
 //
 // While this is completely unnecessary from a security perspective, it does
-// have the advantage that we can easily detect an invalid cursor without having
-// to actually attempt to query with it.
+// have a few advantages:
 //
-// Encrypting the cursor also ensures that it is opaque to the user, so users do
-// not try to interpret or parse it.
+// 1. We can trivially detect an invalid cursor argument without any complex
+// logic or querying the upstream data source.
+// 2. The contents of the cursor are opaque to the user, which prevents them
+// from trying to interpret or parse it.
+// 3. The cursor we return is always different for every request. This prevents
+// the user from relying on the contents of the cursor being deterministic.
 //
 
 const encodeCursor = async ({
