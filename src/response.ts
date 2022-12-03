@@ -1,3 +1,5 @@
+import { base16 } from "rfc4648";
+
 import { Problem } from "./api";
 import { ContentType, Header, ResponseHeaders } from "./http";
 import { Method } from "./http";
@@ -87,16 +89,27 @@ export type JsonValue =
 export type JsonObject = Readonly<Record<string, JsonValue>>;
 
 export const OKResponse = {
-  json: (
+  json: async (
     status: number,
     obj?: JsonObject,
     headers?: ResponseHeaders
-  ): Response =>
-    new Response(JSON.stringify(obj), {
+  ): Promise<Response> => {
+    const jsonResponseObj = JSON.stringify(obj);
+    const responseBodyDigest = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(jsonResponseObj)
+    );
+    const bodyDigestHexStr = base16
+      .stringify(new Uint8Array(responseBodyDigest))
+      .toLowerCase();
+
+    return new Response(jsonResponseObj, {
       status,
       headers: {
         [Header.ContentType]: ContentType.Json,
+        [Header.ETag]: `"${bodyDigestHexStr}"`,
         ...headers,
       },
-    }),
+    });
+  },
 };

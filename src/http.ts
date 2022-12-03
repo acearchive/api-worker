@@ -1,6 +1,7 @@
 export const Header = {
   ContentType: "Content-Type",
   Allow: "Allow",
+  ETag: "ETag",
 } as const;
 
 export type ResponseHeaders = {
