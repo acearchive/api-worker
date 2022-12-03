@@ -16,23 +16,41 @@ export type ProblemInit = RequiredExcept<Problem, "instance">;
 
 export type ErrorInit = Omit<ProblemInit, "status">;
 
-const newErrorResponse = (
+const etagFromResponseBody = async (responseBody: string): Promise<string> => {
+  const responseBodyDigest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(responseBody)
+  );
+  const bodyDigestHexStr = base16
+    .stringify(new Uint8Array(responseBodyDigest))
+    .toLowerCase();
+
+  return `"${bodyDigestHexStr}"`;
+};
+
+const newErrorResponse = async (
   problem: ProblemInit,
   headers?: ResponseHeaders
-): Response =>
-  new Response(JSON.stringify(problem), {
+): Promise<Response> => {
+  const responseBody = JSON.stringify(problem);
+  return new Response(responseBody, {
     status: problem.status,
     headers: {
       [Header.ContentType]: ContentType.Problem,
+      [Header.ContentLength]: responseBody.length.toString(10),
+      [Header.CacheControl]: "no-cache",
+      [Header.AccessControlAllowOrigin]: "*",
+      [Header.ETag]: await etagFromResponseBody(responseBody),
       ...headers,
     },
   });
+};
 
 export const ErrorResponse = {
-  methodNotAllowed: (
+  methodNotAllowed: async (
     actual: string,
     allowed: ReadonlyArray<Method>
-  ): Response =>
+  ): Promise<Response> =>
     newErrorResponse(
       {
         type: "/problems/method-not-allowed",
@@ -44,7 +62,7 @@ export const ErrorResponse = {
         Allow: allowed.join(", "),
       }
     ),
-  endpointNotFound: (url: URL): Response =>
+  endpointNotFound: async (url: URL): Promise<Response> =>
     newErrorResponse({
       type: "/problems/endpoint-not-found",
       title: "Endpoint Not Found",
@@ -52,7 +70,10 @@ export const ErrorResponse = {
       detail: `There is no such endpoint '${url.pathname}'.`,
       instance: url.pathname,
     }),
-  malformedRequest: (detail: string, instance: string): Response =>
+  malformedRequest: async (
+    detail: string,
+    instance: string
+  ): Promise<Response> =>
     newErrorResponse({
       type: "/problems/malformed-request",
       title: "Malformed Request",
@@ -60,7 +81,7 @@ export const ErrorResponse = {
       detail,
       instance,
     }),
-  artifactNotFound: (artifactId: string): Response =>
+  artifactNotFound: async (artifactId: string): Promise<Response> =>
     newErrorResponse({
       type: "/problems/artifact-not-found",
       title: "Artifact Not Found",
@@ -69,7 +90,7 @@ export const ErrorResponse = {
       instance: `/artifacts/${artifactId}`,
     }),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  unexpectedError: (reason: any): Response =>
+  unexpectedError: async (reason: any): Promise<Response> =>
     newErrorResponse({
       type: "/problems/unexpected-error",
       title: "Unexpected Error",
@@ -94,20 +115,16 @@ export const OKResponse = {
     obj?: JsonObject,
     headers?: ResponseHeaders
   ): Promise<Response> => {
-    const jsonResponseObj = JSON.stringify(obj);
-    const responseBodyDigest = await crypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(jsonResponseObj)
-    );
-    const bodyDigestHexStr = base16
-      .stringify(new Uint8Array(responseBodyDigest))
-      .toLowerCase();
+    const responseBody = JSON.stringify(obj);
 
-    return new Response(jsonResponseObj, {
+    return new Response(responseBody, {
       status,
       headers: {
         [Header.ContentType]: ContentType.Json,
-        [Header.ETag]: `"${bodyDigestHexStr}"`,
+        [Header.ContentLength]: responseBody.length.toString(10),
+        [Header.CacheControl]: "no-cache",
+        [Header.AccessControlAllowOrigin]: "*",
+        [Header.ETag]: await etagFromResponseBody(responseBody),
         ...headers,
       },
     });

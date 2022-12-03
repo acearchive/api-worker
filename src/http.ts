@@ -1,7 +1,10 @@
 export const Header = {
   ContentType: "Content-Type",
+  ContentLength: "Content-Length",
+  CacheControl: "Cache-Control",
   Allow: "Allow",
   ETag: "ETag",
+  AccessControlAllowOrigin: "Access-Control-Allow-Origin",
 } as const;
 
 export type ResponseHeaders = {
@@ -11,6 +14,6 @@ export type ResponseHeaders = {
 export type Method = "GET" | "HEAD" | "POST" | "PUT" | "DELETE";
 
 export const ContentType = {
-  Json: "application/json",
-  Problem: "application/problem+json",
+  Json: "application/json; charset=utf-8",
+  Problem: "application/problem+json; charset=utf-8",
 } as const;
