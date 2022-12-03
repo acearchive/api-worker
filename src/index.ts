@@ -25,7 +25,7 @@ router.all("/artifacts/:id", ({ params, method }, env: Env) => {
   return getArtifact({ artifactId, kv: env.ARTIFACTS_KV, method });
 });
 
-router.all("/artifacts/", ({ method, query }, env: Env) => {
+router.all("/artifacts/", async ({ method, query }, env: Env) => {
   if (method !== "GET" && method !== "HEAD") {
     return ErrorResponse.methodNotAllowed(method, ["GET", "HEAD"]);
   }
@@ -40,7 +40,7 @@ router.all("/artifacts/", ({ method, query }, env: Env) => {
 
   const { limit: rawLimit, cursor: rawCursor } = query;
 
-  const limitValidationResult = validateLimit(rawLimit);
+  const limitValidationResult = await validateLimit(rawLimit);
 
   if (!limitValidationResult.valid) {
     return limitValidationResult.response;

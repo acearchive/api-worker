@@ -6,7 +6,7 @@ export const isBlank = (input: string | undefined | null): boolean =>
 export type CastResult<T> = { valid: true; value: T } | { valid: false };
 
 const toInteger = (input: string): CastResult<number> => {
-  if (!/^[0-9]+$/.test(input)) return { valid: false };
+  if (!/^-?[0-9]+$/.test(input)) return { valid: false };
 
   return { valid: true, value: parseInt(input, 10) };
 };
@@ -19,7 +19,9 @@ const minPageSize = 1;
 const maxPageSize = 250;
 export const defaultPaginationLimit = 10;
 
-export const validateLimit = (rawLimit: string): ValidationResult<number> => {
+export const validateLimit = async (
+  rawLimit: string
+): Promise<ValidationResult<number>> => {
   if (isBlank(rawLimit)) return { valid: true, value: defaultPaginationLimit };
 
   const castResult = toInteger(rawLimit);
@@ -27,7 +29,7 @@ export const validateLimit = (rawLimit: string): ValidationResult<number> => {
   if (!castResult.valid) {
     return {
       valid: false,
-      response: ErrorResponse.malformedRequest(
+      response: await ErrorResponse.malformedRequest(
         "The 'limit' parameter must be an integer.",
         `/artifacts/?limit=${rawLimit}`
       ),
@@ -39,7 +41,7 @@ export const validateLimit = (rawLimit: string): ValidationResult<number> => {
   if (limit < minPageSize) {
     return {
       valid: false,
-      response: ErrorResponse.malformedRequest(
+      response: await ErrorResponse.malformedRequest(
         `The 'limit' parameter must be >= ${minPageSize}.`,
         `/artifacts/?limit=${rawLimit}`
       ),
@@ -49,7 +51,7 @@ export const validateLimit = (rawLimit: string): ValidationResult<number> => {
   if (limit > maxPageSize) {
     return {
       valid: false,
-      response: ErrorResponse.malformedRequest(
+      response: await ErrorResponse.malformedRequest(
         `The 'limit' parameter must be <= ${maxPageSize}.`,
         `/artifacts/?limit=${rawLimit}`
       ),
