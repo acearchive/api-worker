@@ -175,19 +175,27 @@ components:
         title:
           type: string
           description: |
-            The title of the artifact, which may use CommonMark-style asterisk
-            syntax to denote `<cite></cite>` markup.
+            The title of the artifact.
+
+            This may use CommonMark-style asterisk syntax to denote
+            `<cite></cite>` markup.
           example: "*The Asexual Manifesto*"
         summary:
           type: string
           description: |
             A short summary of the artifact.
+
+            This may use CommonMark-style asterisk syntax to denote
+            `<cite></cite>` markup.
           example: >-
             A paper by the Asexual Caucus of the New York Radical Feminists.
         description:
           type: string
           description: |
             A longer description of the artifact.
+
+            This may use CommonMark-style asterisk syntax to denote
+            `<cite></cite>` markup.
           example: >-
             A paper by the Asexual Caucus of the New York Radical Feminists in
             which Lisa Orlando outlines a definition asexuality.
@@ -397,8 +405,7 @@ components:
             occurrence of the problem.
           format: int32
           minimum: 100
-          maximum: 600
-          exclusiveMaximum: true
+          maximum: 599
           example: 404
         detail:
           type: string
