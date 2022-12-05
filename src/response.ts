@@ -28,6 +28,13 @@ const etagFromResponseBody = async (responseBody: string): Promise<string> => {
   return `"${bodyDigestHexStr}"`;
 };
 
+const commonResponseHeaders = {
+  [Header.CacheControl]: "no-cache",
+  [Header.AccessControlAllowOrigin]: "*",
+  [Header.AccessControlAllowMethods]: "HEAD, GET, OPTIONS",
+  [Header.AccessControlAllowHeaders]: "Content-Type",
+} as const;
+
 const newErrorResponse = async (
   problem: ProblemInit,
   headers?: ResponseHeaders
@@ -38,9 +45,8 @@ const newErrorResponse = async (
     headers: {
       [Header.ContentType]: ContentType.Problem,
       [Header.ContentLength]: responseBody.length.toString(10),
-      [Header.CacheControl]: "no-cache",
-      [Header.AccessControlAllowOrigin]: "*",
       [Header.ETag]: await etagFromResponseBody(responseBody),
+      ...commonResponseHeaders,
       ...headers,
     },
   });
@@ -115,18 +121,21 @@ export const OKResponse = {
     obj?: JsonObject,
     headers?: ResponseHeaders
   ): Promise<Response> => {
-    const responseBody = JSON.stringify(obj);
+    const responseBody = obj === undefined ? undefined : JSON.stringify(obj);
 
     return new Response(responseBody, {
       status,
       headers: {
-        [Header.ContentType]: ContentType.Json,
-        [Header.ContentLength]: responseBody.length.toString(10),
-        [Header.CacheControl]: "no-cache",
-        [Header.AccessControlAllowOrigin]: "*",
-        [Header.ETag]: await etagFromResponseBody(responseBody),
+        ...(responseBody !== undefined && {
+          [Header.ContentType]: ContentType.Json,
+          [Header.ContentLength]: responseBody.length.toString(10),
+          [Header.ETag]: await etagFromResponseBody(responseBody),
+        }),
+        ...commonResponseHeaders,
         ...headers,
       },
     });
   },
+  options: async (): Promise<Response> =>
+    new Response(undefined, { status: 200, headers: commonResponseHeaders }),
 };

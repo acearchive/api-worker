@@ -1,6 +1,6 @@
 import { Router } from "itty-router";
 import { getArtifact, listArtifacts } from "./handlers";
-import { ErrorResponse } from "./response";
+import { ErrorResponse, OKResponse } from "./response";
 import { defaultPaginationLimit, isBlank, validateLimit } from "./validation";
 
 export interface Env {
@@ -12,9 +12,11 @@ const majorApiVersion = 0;
 
 const router = Router({ base: `/v${majorApiVersion}` });
 
+router.options("*", () => OKResponse.options());
+
 router.all("/artifacts/:id", ({ params, method }, env: Env) => {
   if (method !== "GET" && method !== "HEAD") {
-    return ErrorResponse.methodNotAllowed(method, ["GET", "HEAD"]);
+    return ErrorResponse.methodNotAllowed(method, ["GET", "HEAD", "OPTIONS"]);
   }
 
   const artifactId = params?.id;
@@ -27,7 +29,7 @@ router.all("/artifacts/:id", ({ params, method }, env: Env) => {
 
 router.all("/artifacts/", async ({ method, query }, env: Env) => {
   if (method !== "GET" && method !== "HEAD") {
-    return ErrorResponse.methodNotAllowed(method, ["GET", "HEAD"]);
+    return ErrorResponse.methodNotAllowed(method, ["GET", "HEAD", "OPTIONS"]);
   }
 
   if (query === undefined) {
