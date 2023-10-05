@@ -4,11 +4,18 @@ compatibility_date = "2022-10-04"
 account_id = "9d143afa60e911e9904e835bd1db8504"
 usage_model = "bundled"
 
-[route]
-pattern = "api.acearchive.lgbt"
-custom_domain = true
+[env.prod]
+route = "api.acearchive.lgbt"
 
-[[kv_namespaces]]
-binding = "ARTIFACTS_KV"
-id = "17d335a0392045a499e5b7b2af8e4321"
-preview_id = "17d335a0392045a499e5b7b2af8e4321"
+  [[env.prod.d1_databases]]
+  binding = "DB"
+  database_name = "acearchive-artifacts"
+  database_id = "ffd316de-0455-429b-90c7-45f935183333"
+
+[env.dev]
+route = "dev.api.acearchive.lgbt"
+
+  [[env.dev.d1_databases]]
+  binding = "DB"
+  database_name = "acearchive-artifacts-dev"
+  database_id = "078c47dc-e6ae-4edf-89b3-db5a6bb1b4d6"
