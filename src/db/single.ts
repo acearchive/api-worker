@@ -1,60 +1,18 @@
-export type ArtifactsRow = Readonly<{
-  artifact_id: string;
-  slug: string;
-  title: string;
-  summary: string;
-  description: string | null;
-  from_year: number;
-  to_year?: number | null;
-}>;
-
-export type ArtifactAliasesRow = Readonly<{
-  slug: string;
-}>;
-
-export type FilesRow = Readonly<{
-  filename: string;
-  name: string;
-  media_type: string | null;
-  multihash: string;
-  lang: string | null;
-  hidden: boolean;
-}>;
-
-export type FileAliasesRow = Readonly<{
-  slug: string;
-}>;
-
-export type LinksRow = Readonly<{
-  name: string;
-  url: string;
-}>;
-
-export type PeopleRow = Readonly<{
-  name: string;
-}>;
-
-export type IdentitiesRow = Readonly<{
-  name: string;
-}>;
-
-export type DecadesRow = Readonly<{
-  decade: string;
-}>;
-
-export type Artifact =
-  | ArtifactsRow
-  | {
-      files: ReadonlyArray<FilesRow | { aliases: FileAliasesRow }>;
-      links: ReadonlyArray<LinksRow>;
-      people: ReadonlyArray<PeopleRow>;
-      identities: ReadonlyArray<IdentitiesRow>;
-      decades: ReadonlyArray<DecadesRow>;
-      aliases: ReadonlyArray<ArtifactAliasesRow>;
-    };
-
 // In lieu of any sort of db function or view, we're just using dumb string
 // interpolation to build queries. It is VERY IMPORTANT that these remain static
+
+import {
+  Artifact,
+  ArtifactAliasesRow,
+  ArtifactsRow,
+  DecadesRow,
+  FileAliasesRow,
+  FilesRow,
+  IdentitiesRow,
+  LinksRow,
+  PeopleRow,
+} from "./row";
+
 // strings to avoid any possibility of injection.
 const LATEST_ARTIFACT_JOIN_SQL = `
   (
@@ -131,6 +89,7 @@ class GetArtifactQuery {
       .prepare(
         `
       SELECT
+        files.id,
         files.artifact,
         files.filename,
         files.name,
@@ -158,6 +117,7 @@ class GetArtifactQuery {
       .prepare(
         `
       SELECT
+        file_aliases.file,
         file_aliases.slug
       FROM
         file_aliases
@@ -296,6 +256,20 @@ class GetArtifactQuery {
       return undefined;
     }
 
-    // TODO
+    return {
+      files:
+        filesRows?.map((filesRow) => ({
+          aliases:
+            fileAliasesRows?.filter(
+              (fileAliasesRow) => fileAliasesRow.file === filesRow.id
+            ) ?? [],
+          ...filesRow,
+        })) ?? [],
+      links: linksRows ?? [],
+      people: peopleRows ?? [],
+      identities: identitiesRows ?? [],
+      decades: decadesRows ?? [],
+      aliases: artifactAliasesRows ?? [],
+    };
   };
 }
