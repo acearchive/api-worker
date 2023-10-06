@@ -5,7 +5,10 @@ account_id = "9d143afa60e911e9904e835bd1db8504"
 usage_model = "bundled"
 
 [env.prod]
-route = "api.acearchive.lgbt"
+
+  [env.prod.route]
+  pattern = "api.acearchive.lgbt"
+  custom_domain = true
 
   [[env.prod.d1_databases]]
   binding = "DB"
@@ -13,7 +16,10 @@ route = "api.acearchive.lgbt"
   database_id = "ffd316de-0455-429b-90c7-45f935183333"
 
 [env.dev]
-route = "dev.api.acearchive.lgbt"
+
+  [env.dev.route]
+  pattern = "api-dev.acearchive.lgbt"
+  custom_domain = true
 
   [[env.dev.d1_databases]]
   binding = "DB"
