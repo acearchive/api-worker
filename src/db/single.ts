@@ -1,6 +1,3 @@
-// In lieu of any sort of db function or view, we're just using dumb string
-// interpolation to build queries. It is VERY IMPORTANT that these remain static
-
 import {
   Artifact,
   ArtifactAliasesRow,
@@ -13,6 +10,8 @@ import {
   PeopleRow,
 } from "./model";
 
+// In lieu of any sort of db function or view, we're just using dumb string
+// interpolation to build queries. It is VERY IMPORTANT that these remain static
 // strings to avoid any possibility of injection.
 const LATEST_ARTIFACT_JOIN_SQL = `
   (
