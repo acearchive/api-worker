@@ -48,7 +48,9 @@ export type DecadesRow = Readonly<{
 }>;
 
 export type Artifact = ArtifactsRow & {
-  files: ReadonlyArray<FilesRow & Readonly<{ aliases: FileAliasesRow }>>;
+  files: ReadonlyArray<
+    FilesRow & Readonly<{ aliases: ReadonlyArray<FileAliasesRow> }>
+  >;
   links: ReadonlyArray<LinksRow>;
   people: ReadonlyArray<PeopleRow>;
   identities: ReadonlyArray<IdentitiesRow>;

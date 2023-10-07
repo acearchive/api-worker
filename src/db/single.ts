@@ -11,7 +11,7 @@ import {
   IdentitiesRow,
   LinksRow,
   PeopleRow,
-} from "./row";
+} from "./model";
 
 // strings to avoid any possibility of injection.
 const LATEST_ARTIFACT_JOIN_SQL = `
@@ -270,6 +270,7 @@ class GetArtifactQuery {
       identities: identitiesRows ?? [],
       decades: decadesRows ?? [],
       aliases: artifactAliasesRows ?? [],
+      ...artifactsRow,
     };
   };
 }
