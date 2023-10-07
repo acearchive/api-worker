@@ -12,7 +12,7 @@ custom_domain = true
 binding = "DB"
 database_name = "acearchive-artifacts"
 database_id = "ffd316de-0455-429b-90c7-45f935183333"
-preview_database_id = "078c47dc-e6ae-4edf-89b3-db5a6bb1b4d6"
+preview_database_id = "689894b6-d786-4247-bd64-b3071fd2d609"
 
 [env.dev]
 
@@ -23,4 +23,4 @@ preview_database_id = "078c47dc-e6ae-4edf-89b3-db5a6bb1b4d6"
   [[env.dev.d1_databases]]
   binding = "DB"
   database_name = "acearchive-artifacts-dev"
-  database_id = "078c47dc-e6ae-4edf-89b3-db5a6bb1b4d6"
+  database_id = "689894b6-d786-4247-bd64-b3071fd2d609"
