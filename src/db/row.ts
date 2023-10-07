@@ -1,3 +1,5 @@
+import { Artifact as ApiArtifact } from "../api";
+
 export type ArtifactsRow = Readonly<{
   artifact_id: string;
   slug: string;
@@ -5,7 +7,7 @@ export type ArtifactsRow = Readonly<{
   summary: string;
   description: string | null;
   from_year: number;
-  to_year?: number | null;
+  to_year: number | null;
 }>;
 
 export type ArtifactAliasesRow = Readonly<{
@@ -41,16 +43,40 @@ export type IdentitiesRow = Readonly<{
 }>;
 
 export type DecadesRow = Readonly<{
-  decade: string;
+  decade: number;
 }>;
 
-export type Artifact =
-  | ArtifactsRow
-  | {
-      files: ReadonlyArray<FilesRow | { aliases: FileAliasesRow }>;
-      links: ReadonlyArray<LinksRow>;
-      people: ReadonlyArray<PeopleRow>;
-      identities: ReadonlyArray<IdentitiesRow>;
-      decades: ReadonlyArray<DecadesRow>;
-      aliases: ReadonlyArray<ArtifactAliasesRow>;
-    };
+export type Artifact = ArtifactsRow & {
+  files: ReadonlyArray<FilesRow & Readonly<{ aliases: FileAliasesRow }>>;
+  links: ReadonlyArray<LinksRow>;
+  people: ReadonlyArray<PeopleRow>;
+  identities: ReadonlyArray<IdentitiesRow>;
+  decades: ReadonlyArray<DecadesRow>;
+  aliases: ReadonlyArray<ArtifactAliasesRow>;
+};
+
+export const toApi = (artifact: Artifact): ApiArtifact => ({
+  id: artifact.artifact_id,
+  title: artifact.title,
+  summary: artifact.summary,
+  description: artifact.description ?? undefined,
+  url: `https://acearchive.lgbt/artifacts/${artifact.slug}`,
+  files: artifact.files.map((file) => ({
+    filename: file.filename,
+    name: file.name,
+    media_type: file.media_type ?? undefined,
+    hash: "TODO",
+    hash_algorithm: "TODO",
+    url: `https://files.acearchive.lgbt/artifacts/${artifact.slug}/${file.filename}`,
+    lang: file.lang ?? undefined,
+  })),
+  links: artifact.links.map((link) => ({
+    name: link.name,
+    url: link.url,
+  })),
+  people: artifact.people.map((person) => person.name),
+  identities: artifact.identities.map((identity) => identity.name),
+  from_year: artifact.from_year,
+  to_year: artifact.to_year ?? undefined,
+  decades: artifact.decades.map((decade) => decade.decade),
+});
