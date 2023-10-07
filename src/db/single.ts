@@ -77,7 +77,7 @@ export class GetArtifactQuery {
       JOIN
         ${LATEST_ARTIFACT_JOIN_SQL}
       WHERE
-        artifacts.id = ?1
+        artifact_versions.artifact_id = ?1
   `
       )
       .bind(this.artifactId);
@@ -105,7 +105,7 @@ export class GetArtifactQuery {
       JOIN
         ${LATEST_ARTIFACT_JOIN_SQL}
       WHERE
-        artifacts.id = ?1
+        artifact_versions.artifact_id = ?1
   `
       )
       .bind(this.artifactId);
@@ -129,7 +129,7 @@ export class GetArtifactQuery {
       JOIN
         ${LATEST_ARTIFACT_JOIN_SQL}
       WHERE
-        artifacts.id = ?1
+        artifact_versions.artifact_id = ?1
   `
       )
       .bind(this.artifactId);
@@ -151,7 +151,7 @@ export class GetArtifactQuery {
       JOIN
         ${LATEST_ARTIFACT_JOIN_SQL}
       WHERE
-        artifacts.id = ?1
+        artifact_versions.artifact_id = ?1
   `
       )
       .bind(this.artifactId);
@@ -172,7 +172,7 @@ export class GetArtifactQuery {
       JOIN
         ${LATEST_ARTIFACT_JOIN_SQL}
       WHERE
-        artifacts.id = ?1
+        artifact_versions.artifact_id = ?1
   `
       )
       .bind(this.artifactId);
@@ -193,7 +193,7 @@ export class GetArtifactQuery {
       JOIN
         ${LATEST_ARTIFACT_JOIN_SQL}
       WHERE
-        artifacts.id = ?1
+        artifact_versions.artifact_id = ?1
   `
       )
       .bind(this.artifactId);
@@ -214,7 +214,7 @@ export class GetArtifactQuery {
       JOIN
         ${LATEST_ARTIFACT_JOIN_SQL}
       WHERE
-        artifacts.id = ?1
+        artifact_versions.artifact_id = ?1
   `
       )
       .bind(this.artifactId);
