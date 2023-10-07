@@ -28,7 +28,7 @@ const LATEST_ARTIFACT_JOIN_SQL = `
   AND latest_artifacts.version = artifact_versions.version
 ` as const;
 
-class GetArtifactQuery {
+export class GetArtifactQuery {
   private readonly db: D1Database;
   private readonly artifactId: string;
 

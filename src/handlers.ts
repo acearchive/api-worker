@@ -1,6 +1,6 @@
 import { ErrorResponse } from "./response";
-import { ArtifactData, KeyVersion, toApi } from "./model";
-import { OKResponse } from "./response";
+import { ArtifactData, KeyVersion } from "./model";
+import { OKResponse as OkResponse } from "./response";
 import {
   ArtifactCursor,
   decodeCursor,
@@ -8,35 +8,35 @@ import {
   unexpectedCursorErrorDetail,
 } from "./cursor";
 import { Env } from ".";
+import { GetArtifactQuery } from "./db/single";
+import { toApi } from "./db/model";
 
 const artifactsListKey = `artifacts:v${KeyVersion.artifacts}:`;
 
-const toArtifactKey = (artifactId: string): string =>
-  `artifacts:v${KeyVersion.artifacts}:${artifactId}`;
-
 export const getArtifact = async ({
   artifactId,
-  kv,
+  db,
   method,
 }: {
   artifactId: string;
-  kv: KVNamespace;
+  db: D1Database;
   method: "GET" | "HEAD";
 }): Promise<Response> => {
-  const artifactData: ArtifactData | null | undefined = await kv.get(
-    toArtifactKey(artifactId),
-    { type: "json" }
-  );
+  const query = new GetArtifactQuery(db, artifactId);
 
-  if (artifactData === null || artifactData === undefined) {
+  const artifactRow = await query.query();
+
+  if (artifactRow === undefined) {
     return ErrorResponse.artifactNotFound(artifactId);
   }
 
+  const artifact = toApi(artifactRow);
+
   switch (method) {
     case "HEAD":
-      return OKResponse.json(200);
+      return OkResponse.json(200);
     case "GET":
-      return OKResponse.json(200, toApi(artifactData));
+      return OkResponse.json(200, artifact);
   }
 };
 
@@ -88,8 +88,8 @@ export const listArtifacts = async ({
 
   switch (method) {
     case "HEAD":
-      return OKResponse.json(200);
+      return OkResponse.json(200);
     case "GET":
-      return OKResponse.json(200, responseObj);
+      return OkResponse.json(200, responseObj);
   }
 };

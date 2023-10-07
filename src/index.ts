@@ -4,6 +4,7 @@ import { ErrorResponse, OKResponse } from "./response";
 import { defaultPaginationLimit, isBlank, validateLimit } from "./validation";
 
 export interface Env {
+  DB: D1Database;
   ARTIFACTS_KV: KVNamespace;
   CURSOR_ENCRYPTION_KEY: string;
 }
@@ -24,7 +25,7 @@ router.all("/artifacts/:id", ({ params, method }, env: Env) => {
     throw new Error("Failed to parse URL path argument.");
   }
 
-  return getArtifact({ artifactId, kv: env.ARTIFACTS_KV, method });
+  return getArtifact({ artifactId, db: env.DB, method });
 });
 
 router.all("/artifacts/", async ({ method, query }, env: Env) => {
