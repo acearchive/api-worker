@@ -117,7 +117,7 @@ export class GetArtifactQuery {
         `
       SELECT
         file_aliases.file,
-        file_aliases.slug
+        file_aliases.filename
       FROM
         file_aliases
       JOIN
