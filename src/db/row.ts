@@ -1,4 +1,5 @@
 import { Artifact as ApiArtifact } from "../api";
+import { decodeMultihash } from "./multihash";
 
 export type ArtifactsRow = Readonly<{
   artifact_id: string;
@@ -61,15 +62,19 @@ export const toApi = (artifact: Artifact): ApiArtifact => ({
   summary: artifact.summary,
   description: artifact.description ?? undefined,
   url: `https://acearchive.lgbt/artifacts/${artifact.slug}`,
-  files: artifact.files.map((file) => ({
-    filename: file.filename,
-    name: file.name,
-    media_type: file.media_type ?? undefined,
-    hash: "TODO",
-    hash_algorithm: "TODO",
-    url: `https://files.acearchive.lgbt/artifacts/${artifact.slug}/${file.filename}`,
-    lang: file.lang ?? undefined,
-  })),
+  files: artifact.files.map((file) => {
+    const { hash, hash_algorithm } = decodeMultihash(file.multihash);
+
+    return {
+      filename: file.filename,
+      name: file.name,
+      media_type: file.media_type ?? undefined,
+      hash,
+      hash_algorithm,
+      url: `https://files.acearchive.lgbt/artifacts/${artifact.slug}/${file.filename}`,
+      lang: file.lang ?? undefined,
+    };
+  }),
   links: artifact.links.map((link) => ({
     name: link.name,
     url: link.url,
