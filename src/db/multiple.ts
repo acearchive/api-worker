@@ -45,35 +45,35 @@ export class GetArtifactListQuery {
   private prepareLastCursorQuery = (): D1PreparedStatement =>
     this.db.prepare(
       `
-    SELECT
-      MAX(artifact_versions.artifact_id) AS last_cursor
-    FROM
-      artifact_versions
-    JOIN
-        ${LATEST_ARTIFACT_JOIN_SQL}
-    `
+      SELECT
+        MAX(artifact_versions.artifact_id) AS last_cursor
+      FROM
+        artifact_versions
+      JOIN
+          ${LATEST_ARTIFACT_JOIN_SQL}
+      `
     );
 
   private prepareArtifactsQuery = (): D1PreparedStatement =>
     this.bindVars(
       this.db.prepare(
         `
-      SELECT
-        artifacts.id,
-        artifact_versions.artifact_id,
-        artifacts.slug,
-        artifacts.title,
-        artifacts.summary,
-        artifacts.description,
-        artifacts.from_year,
-        artifacts.to_year
-      FROM
-        artifacts
-      JOIN
-        artifact_versions ON artifact_versions.artifact = artifacts.id
-      JOIN
-        ${this.joinClause()}
-      `
+        SELECT
+          artifacts.id,
+          artifact_versions.artifact_id,
+          artifacts.slug,
+          artifacts.title,
+          artifacts.summary,
+          artifacts.description,
+          artifacts.from_year,
+          artifacts.to_year
+        FROM
+          artifacts
+        JOIN
+          artifact_versions ON artifact_versions.artifact = artifacts.id
+        JOIN
+          ${this.joinClause()}
+        `
       )
     );
 
@@ -81,18 +81,18 @@ export class GetArtifactListQuery {
     this.bindVars(
       this.db.prepare(
         `
-      SELECT
-        artifact_aliases.artifact,
-        artifact_aliases.slug
-      FROM
-        artifact_aliases
-      JOIN
-        artifacts ON artifacts.id = artifact_aliases.artifact
-      JOIN
-        artifact_versions ON artifact_versions.artifact = artifacts.id
-      JOIN
-        ${this.joinClause()}
-      `
+        SELECT
+          artifact_aliases.artifact,
+          artifact_aliases.slug
+        FROM
+          artifact_aliases
+        JOIN
+          artifacts ON artifacts.id = artifact_aliases.artifact
+        JOIN
+          artifact_versions ON artifact_versions.artifact = artifacts.id
+        JOIN
+          ${this.joinClause()}
+        `
       )
     );
 
@@ -100,24 +100,24 @@ export class GetArtifactListQuery {
     this.bindVars(
       this.db.prepare(
         `
-      SELECT
-        files.id,
-        files.artifact,
-        files.filename,
-        files.name,
-        files.media_type,
-        files.multihash,
-        files.lang,
-        files.hidden
-      FROM
-        files
-      JOIN
-        artifacts ON artifacts.id = files.artifact
-      JOIN
-        artifact_versions ON artifact_versions.artifact = artifacts.id
-      JOIN
-        ${this.joinClause()}
-      `
+        SELECT
+          files.id,
+          files.artifact,
+          files.filename,
+          files.name,
+          files.media_type,
+          files.multihash,
+          files.lang,
+          files.hidden
+        FROM
+          files
+        JOIN
+          artifacts ON artifacts.id = files.artifact
+        JOIN
+          artifact_versions ON artifact_versions.artifact = artifacts.id
+        JOIN
+          ${this.joinClause()}
+        `
       )
     );
 
@@ -125,20 +125,20 @@ export class GetArtifactListQuery {
     this.bindVars(
       this.db.prepare(
         `
-      SELECT
-        file_aliases.file,
-        file_aliases.filename
-      FROM
-        file_aliases
-      JOIN
-        files ON files.id = file_aliases.file
-      JOIN
-        artifacts ON artifacts.id = files.artifact
-      JOIN
-        artifact_versions ON artifact_versions.artifact = artifacts.id
-      JOIN
-        ${this.joinClause()}
-      `
+        SELECT
+          file_aliases.file,
+          file_aliases.filename
+        FROM
+          file_aliases
+        JOIN
+          files ON files.id = file_aliases.file
+        JOIN
+          artifacts ON artifacts.id = files.artifact
+        JOIN
+          artifact_versions ON artifact_versions.artifact = artifacts.id
+        JOIN
+          ${this.joinClause()}
+        `
       )
     );
 
@@ -146,19 +146,19 @@ export class GetArtifactListQuery {
     this.bindVars(
       this.db.prepare(
         `
-      SELECT
-        links.artifact,
-        links.name,
-        links.url
-      FROM
-        links
-      JOIN
-        artifacts ON artifacts.id = links.artifact
-      JOIN
-        artifact_versions ON artifact_versions.artifact = artifacts.id
-      JOIN
-        ${this.joinClause()}
-      `
+        SELECT
+          links.artifact,
+          links.name,
+          links.url
+        FROM
+          links
+        JOIN
+          artifacts ON artifacts.id = links.artifact
+        JOIN
+          artifact_versions ON artifact_versions.artifact = artifacts.id
+        JOIN
+          ${this.joinClause()}
+        `
       )
     );
 
@@ -166,18 +166,18 @@ export class GetArtifactListQuery {
     this.bindVars(
       this.db.prepare(
         `
-      SELECT
-        people.artifact,
-        people.name
-      FROM
-        people
-      JOIN
-        artifacts ON artifacts.id = people.artifact
-      JOIN
-        artifact_versions ON artifact_versions.artifact = artifacts.id
-      JOIN
-        ${this.joinClause()}
-      `
+        SELECT
+          people.artifact,
+          people.name
+        FROM
+          people
+        JOIN
+          artifacts ON artifacts.id = people.artifact
+        JOIN
+          artifact_versions ON artifact_versions.artifact = artifacts.id
+        JOIN
+          ${this.joinClause()}
+        `
       )
     );
 
@@ -185,18 +185,18 @@ export class GetArtifactListQuery {
     this.bindVars(
       this.db.prepare(
         `
-      SELECT
-        identities.artifact,
-        identities.name
-      FROM
-        identities
-      JOIN
-        artifacts ON artifacts.id = identities.artifact
-      JOIN
-        artifact_versions ON artifact_versions.artifact = artifacts.id
-      JOIN
-        ${this.joinClause()}
-      `
+        SELECT
+          identities.artifact,
+          identities.name
+        FROM
+          identities
+        JOIN
+          artifacts ON artifacts.id = identities.artifact
+        JOIN
+          artifact_versions ON artifact_versions.artifact = artifacts.id
+        JOIN
+          ${this.joinClause()}
+        `
       )
     );
 
@@ -204,18 +204,18 @@ export class GetArtifactListQuery {
     this.bindVars(
       this.db.prepare(
         `
-      SELECT
-        decades.artifact,
-        decades.decade
-      FROM
-        decades
-      JOIN
-        artifacts ON artifacts.id = decades.artifact
-      JOIN
-        artifact_versions ON artifact_versions.artifact = artifacts.id
-      JOIN
-        ${this.joinClause()}
-      `
+        SELECT
+          decades.artifact,
+          decades.decade
+        FROM
+          decades
+        JOIN
+          artifacts ON artifacts.id = decades.artifact
+        JOIN
+          artifact_versions ON artifact_versions.artifact = artifacts.id
+        JOIN
+          ${this.joinClause()}
+        `
       )
     );
 
