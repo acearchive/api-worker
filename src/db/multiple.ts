@@ -47,11 +47,9 @@ export class GetArtifactListQuery {
       this.db.prepare(
         `
       SELECT
-        MAX(artifacts.artifact_id) AS last_cursor
+        MAX(artifact_versions.artifact_id) AS last_cursor
       FROM
-        artifacts
-      JOIN
-        artifact_versions ON artifact_versions.artifact = artifacts.id
+        artifact_versions
       JOIN
           ${LATEST_ARTIFACT_JOIN_SQL}
       `

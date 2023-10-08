@@ -23,7 +23,7 @@ export const LATEST_ARTIFACT_JOIN_SQL = `
 export const CURSOR_PAGE_JOIN_SQL = `
   (
     SELECT
-      artifact_versions.artifact_id,
+      artifact_versions.artifact_id
     FROM
       artifact_versions
     JOIN
@@ -42,7 +42,7 @@ export const CURSOR_PAGE_JOIN_SQL = `
 export const FIRST_PAGE_JOIN_SQL = `
   (
     SELECT
-      artifact_versions.artifact_id,
+      artifact_versions.artifact_id
     FROM
       artifact_versions
     JOIN
