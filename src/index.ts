@@ -1,5 +1,4 @@
 import { Router } from "itty-router";
-import { decodeCursor } from "./cursor";
 import { getArtifact, listArtifacts } from "./handlers";
 import { ErrorResponse, OKResponse } from "./response";
 import { defaultPaginationLimit, isBlank, validateLimit } from "./validation";
