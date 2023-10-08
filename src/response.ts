@@ -87,6 +87,26 @@ export const ErrorResponse = {
       detail,
       instance,
     }),
+  badQueryParam: async ({
+    params,
+    endpoint,
+  }: {
+    params: Record<string, string>;
+    endpoint: string;
+  }) => {
+    // If the user passes multiple bad query params, we're only going to show
+    // the first one in the error message.
+    const badKey = Object.keys(params)[0];
+    const badValue = params[badKey];
+
+    return await newErrorResponse({
+      type: "/problems/invalid-parameter",
+      title: "Invalid Query Parameter",
+      status: 400,
+      detail: `This is not a valid query parameter: '${badKey}'.`,
+      instance: `${endpoint}/?${badKey}=${badValue}`,
+    });
+  },
   artifactNotFound: async (artifactId: string): Promise<Response> =>
     newErrorResponse({
       type: "/problems/artifact-not-found",

@@ -15,9 +15,13 @@ const router = Router({ base: `/v${majorApiVersion}` });
 
 router.options("*", () => OKResponse.options());
 
-router.all("/artifacts/:id", ({ params, method }, env: Env) => {
+router.all("/artifacts/:id", async ({ params, method, query }, env: Env) => {
   if (method !== "GET" && method !== "HEAD") {
-    return ErrorResponse.methodNotAllowed(method, ["GET", "HEAD", "OPTIONS"]);
+    return await ErrorResponse.methodNotAllowed(method, [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+    ]);
   }
 
   const artifactId = params?.id;
@@ -25,7 +29,14 @@ router.all("/artifacts/:id", ({ params, method }, env: Env) => {
     throw new Error("Failed to parse URL path argument.");
   }
 
-  return getArtifact({ artifactId, db: env.DB, method });
+  if (query !== undefined && Object.keys(query).length > 0) {
+    return await ErrorResponse.badQueryParam({
+      params: query,
+      endpoint: `/artifacts/${artifactId}`,
+    });
+  }
+
+  return await getArtifact({ artifactId, db: env.DB, method });
 });
 
 router.all("/artifacts/", async ({ method, query }, env: Env) => {
@@ -34,7 +45,7 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
   }
 
   if (query === undefined) {
-    return listArtifacts({
+    return await listArtifacts({
       encodedCursor: "",
       cursorKey: env.CURSOR_ENCRYPTION_KEY,
       limit: defaultPaginationLimit,
@@ -43,7 +54,14 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
     });
   }
 
-  const { limit: rawLimit, cursor: rawCursor } = query;
+  const { limit: rawLimit, cursor: rawCursor, ...remaining } = query;
+
+  if (Object.keys(remaining).length > 0) {
+    return await ErrorResponse.badQueryParam({
+      params: remaining,
+      endpoint: "/artifacts",
+    });
+  }
 
   const limitValidationResult = await validateLimit(rawLimit);
 
@@ -53,7 +71,7 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
 
   const limit = limitValidationResult.value;
 
-  return listArtifacts({
+  return await listArtifacts({
     encodedCursor: isBlank(rawCursor) ? undefined : rawCursor,
     cursorKey: env.CURSOR_ENCRYPTION_KEY,
     limit,
