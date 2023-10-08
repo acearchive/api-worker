@@ -12,7 +12,7 @@ interface Algorithm {
   len: number;
 }
 
-// The code and name come from the multicodec table:
+// The code and name come from the multiformats codec table:
 // https://github.com/multiformats/multicodec/blob/master/table.csv
 const sha256: Algorithm = {
   name: "sha2-256",
