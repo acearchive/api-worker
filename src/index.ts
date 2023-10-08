@@ -36,6 +36,8 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
 
   if (query === undefined) {
     return listArtifacts({
+      encodedCursor: "",
+      cursorKey: env.CURSOR_ENCRYPTION_KEY,
       limit: defaultPaginationLimit,
       db: env.DB,
       method,
@@ -51,22 +53,10 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
   }
 
   const limit = limitValidationResult.value;
-  const cursorResult = isBlank(rawCursor)
-    ? undefined
-    : await decodeCursor({
-        cursor: rawCursor,
-        rawEncryptionKey: env.CURSOR_ENCRYPTION_KEY,
-      });
-
-  if (cursorResult !== undefined && !cursorResult.valid) {
-    return ErrorResponse.malformedRequest(
-      "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
-      `/artifacts/?cursor=${rawCursor}`
-    );
-  }
 
   return listArtifacts({
-    cursor: cursorResult?.cursor,
+    encodedCursor: rawCursor,
+    cursorKey: env.CURSOR_ENCRYPTION_KEY,
     limit,
     db: env.DB,
     method,

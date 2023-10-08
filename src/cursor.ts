@@ -25,7 +25,7 @@ export type Cursor = Readonly<{
 // the user from relying on the contents of the cursor being deterministic.
 //
 
-const encodeCursor = async ({
+export const encodeCursor = async ({
   cursor,
   rawEncryptionKey,
 }: {

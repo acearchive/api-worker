@@ -43,17 +43,15 @@ export class GetArtifactListQuery {
     this.cursor === undefined ? FIRST_PAGE_JOIN_SQL : CURSOR_PAGE_JOIN_SQL;
 
   private prepareLastCursorQuery = (): D1PreparedStatement =>
-    this.bindVars(
-      this.db.prepare(
-        `
-      SELECT
-        MAX(artifact_versions.artifact_id) AS last_cursor
-      FROM
-        artifact_versions
-      JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+    this.db.prepare(
       `
-      )
+    SELECT
+      MAX(artifact_versions.artifact_id) AS last_cursor
+    FROM
+      artifact_versions
+    JOIN
+        ${LATEST_ARTIFACT_JOIN_SQL}
+    `
     );
 
   private prepareArtifactsQuery = (): D1PreparedStatement =>

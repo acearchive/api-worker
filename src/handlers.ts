@@ -2,9 +2,10 @@ import { ErrorResponse } from "./response";
 import { OKResponse as OkResponse } from "./response";
 import { GetArtifactQuery } from "./db/single";
 import { toApi } from "./db/model";
-import { Cursor } from "./cursor";
+import { Cursor, decodeCursor, encodeCursor } from "./cursor";
 import { GetArtifactListQuery } from "./db/multiple";
 import { ArtifactList } from "./api";
+import { isBlank } from "./validation";
 
 export const getArtifact = async ({
   artifactId,
@@ -34,17 +35,33 @@ export const getArtifact = async ({
 };
 
 export const listArtifacts = async ({
-  cursor,
+  encodedCursor,
+  cursorKey,
   limit,
   db,
   method,
 }: {
-  cursor?: Cursor;
+  encodedCursor: string;
+  cursorKey: string;
   limit: number;
   db: D1Database;
   method: "GET" | "HEAD";
 }): Promise<Response> => {
-  const query = new GetArtifactListQuery(db, cursor, limit);
+  const cursorResult = isBlank(encodedCursor)
+    ? undefined
+    : await decodeCursor({
+        cursor: encodedCursor,
+        rawEncryptionKey: cursorKey,
+      });
+
+  if (cursorResult !== undefined && !cursorResult.valid) {
+    return ErrorResponse.malformedRequest(
+      "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
+      `/artifacts/?cursor=${encodedCursor}`
+    );
+  }
+
+  const query = new GetArtifactListQuery(db, cursorResult?.cursor, limit);
   const { artifacts: artifactRows, lastCursor } = await query.run();
 
   const artifacts = artifactRows.map(toApi);
@@ -62,7 +79,13 @@ export const listArtifacts = async ({
   } else {
     resp_obj = {
       items: artifacts,
-      next_cursor: artifacts[artifacts.length - 1].id,
+      next_cursor: await encodeCursor({
+        cursor: {
+          k: "id",
+          v: artifacts[artifacts.length - 1].id,
+        },
+        rawEncryptionKey: cursorKey,
+      }),
     };
   }
 
