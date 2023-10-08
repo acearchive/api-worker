@@ -1,7 +1,11 @@
 import { Artifact as ApiArtifact } from "../api";
 import { decodeMultihash } from "./multihash";
 
+type ArtifactKey = number;
+type FileKey = number;
+
 export type ArtifactsRow = Readonly<{
+  id: ArtifactKey;
   artifact_id: string;
   slug: string;
   title: string;
@@ -12,11 +16,13 @@ export type ArtifactsRow = Readonly<{
 }>;
 
 export type ArtifactAliasesRow = Readonly<{
+  artifact: ArtifactKey;
   slug: string;
 }>;
 
 export type FilesRow = Readonly<{
-  id: number;
+  id: FileKey;
+  artifact: ArtifactKey;
   filename: string;
   name: string;
   media_type: string | null;
@@ -26,24 +32,28 @@ export type FilesRow = Readonly<{
 }>;
 
 export type FileAliasesRow = Readonly<{
-  file: number;
-  slug: string;
+  file: FileKey;
+  filename: string;
 }>;
 
 export type LinksRow = Readonly<{
+  artifact: ArtifactKey;
   name: string;
   url: string;
 }>;
 
 export type PeopleRow = Readonly<{
+  artifact: ArtifactKey;
   name: string;
 }>;
 
 export type IdentitiesRow = Readonly<{
+  artifact: ArtifactKey;
   name: string;
 }>;
 
 export type DecadesRow = Readonly<{
+  artifact: ArtifactKey;
   decade: number;
 }>;
 
@@ -57,6 +67,24 @@ export type Artifact = ArtifactsRow & {
   decades: ReadonlyArray<DecadesRow>;
   aliases: ReadonlyArray<ArtifactAliasesRow>;
 };
+
+// Convert an array of db rows to a map indexed by a foreign key.
+export const rowsToMap = <K, V>(
+  rows: ReadonlyArray<V> | undefined,
+  func: (row: V) => K
+): Map<K, ReadonlyArray<V>> =>
+  rows === undefined
+    ? new Map()
+    : rows.reduce((map, row) => {
+        const key = func(row);
+
+        const newRows = map.get(key) ?? [];
+        newRows.push(row);
+
+        map.set(key, newRows);
+
+        return map;
+      }, new Map());
 
 export const toApi = (artifact: Artifact): ApiArtifact => ({
   id: artifact.artifact_id,

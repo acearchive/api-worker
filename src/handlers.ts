@@ -1,17 +1,7 @@
 import { ErrorResponse } from "./response";
-import { ArtifactData, KeyVersion } from "./model";
 import { OKResponse as OkResponse } from "./response";
-import {
-  ArtifactCursor,
-  decodeCursor,
-  nextPageFromCursor,
-  unexpectedCursorErrorDetail,
-} from "./cursor";
-import { Env } from ".";
 import { GetArtifactQuery } from "./db/single";
 import { toApi } from "./db/model";
-
-const artifactsListKey = `artifacts:v${KeyVersion.artifacts}:`;
 
 export const getArtifact = async ({
   artifactId,
@@ -40,6 +30,7 @@ export const getArtifact = async ({
   }
 };
 
+/*
 export const listArtifacts = async ({
   cursor: encodedCursor,
   limit,
@@ -51,7 +42,7 @@ export const listArtifacts = async ({
   env: Env;
   method: "GET" | "HEAD";
 }): Promise<Response> => {
-  let cursor: ArtifactCursor | undefined = undefined;
+  let cursor: Cursor | undefined = undefined;
 
   if (encodedCursor !== undefined) {
     const cursorDecodeResult = await decodeCursor({
@@ -93,3 +84,4 @@ export const listArtifacts = async ({
       return OkResponse.json(200, responseObj);
   }
 };
+*/

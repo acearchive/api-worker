@@ -11,15 +11,19 @@ const SHA2_256_CODE = "12";
 const LEN_BYTES_32_CODE = "20";
 
 // This doesn't actually implement proper multihash decoding, because we're only
-// using one algorithm at the moment. We can reassess if we ever decide to swap
-// algorithms.
+// using one algorithm at the moment.
+//
+// TODO: Implement proper multihash decoding. Is there a library for this
+// available on the Workers runtime?
 export const decodeMultihash = (
   multihash: string
 ): { hash: string; hash_algorithm: string } => {
   const prefix = SHA2_256_CODE + LEN_BYTES_32_CODE;
 
   if (!multihash.startsWith(prefix)) {
-    throw new Error("Tried to decode an unrecognized multihash algorithm");
+    throw new Error(
+      "Tried to decode a multihash with an unrecognized algorithm. This is a bug."
+    );
   }
 
   return {

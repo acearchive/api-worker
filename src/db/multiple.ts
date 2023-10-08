@@ -1,3 +1,4 @@
+import { Cursor } from "../cursor";
 import {
   Artifact,
   ArtifactAliasesRow,
@@ -8,23 +9,41 @@ import {
   IdentitiesRow,
   LinksRow,
   PeopleRow,
+  rowsToMap,
 } from "./model";
-import { LATEST_ARTIFACT_JOIN_SQL } from "./sql";
+import { CURSOR_PAGE_JOIN_SQL, FIRST_PAGE_JOIN_SQL } from "./sql";
 
-export class GetArtifactQuery {
+export class GetArtifactListQuery {
   private readonly db: D1Database;
-  private readonly artifactId: string;
+  private readonly cursor?: Cursor;
+  private readonly limit: number;
 
-  constructor(db: D1Database, artifactId: string) {
+  constructor(db: D1Database, cursor: Cursor | undefined, limit: number) {
+    if (cursor !== undefined && cursor.k !== "id") {
+      throw new Error(
+        "Pagination cursor has an unrecognized discriminant. This is a bug."
+      );
+    }
+
     this.db = db;
-    this.artifactId = artifactId;
+    this.cursor = cursor;
+    this.limit = limit;
   }
 
-  private prepareArtifactQuery = (): D1PreparedStatement => {
-    return this.db
-      .prepare(
+  private bindVars = (stmt: D1PreparedStatement): D1PreparedStatement =>
+    this.cursor === undefined
+      ? stmt.bind(this.limit)
+      : stmt.bind(this.cursor.v, this.limit);
+
+  private joinClause = (): string =>
+    this.cursor === undefined ? FIRST_PAGE_JOIN_SQL : CURSOR_PAGE_JOIN_SQL;
+
+  private prepareArtifactsQuery = (): D1PreparedStatement =>
+    this.bindVars(
+      this.db.prepare(
         `
       SELECT
+        artifacts.id,
         artifact_versions.artifact_id,
         artifacts.slug,
         artifacts.title,
@@ -37,21 +56,17 @@ export class GetArtifactQuery {
       JOIN
         artifact_versions ON artifact_versions.artifact = artifacts.id
       JOIN
-        ${LATEST_ARTIFACT_JOIN_SQL}
-      WHERE
-        artifact_versions.artifact_id = ?1
-      LIMIT
-        1
+        ${this.joinClause()}
       `
       )
-      .bind(this.artifactId);
-  };
+    );
 
-  private prepareArtifactAliasesQuery = (): D1PreparedStatement => {
-    return this.db
-      .prepare(
+  private prepareArtifactAliasesQuery = (): D1PreparedStatement =>
+    this.bindVars(
+      this.db.prepare(
         `
       SELECT
+        artifact_aliases.artifact,
         artifact_aliases.slug
       FROM
         artifact_aliases
@@ -60,17 +75,14 @@ export class GetArtifactQuery {
       JOIN
         artifact_versions ON artifact_versions.artifact = artifacts.id
       JOIN
-        ${LATEST_ARTIFACT_JOIN_SQL}
-      WHERE
-        artifact_versions.artifact_id = ?1
+        ${this.joinClause()}
       `
       )
-      .bind(this.artifactId);
-  };
+    );
 
-  private prepareFilesQuery = (): D1PreparedStatement => {
-    return this.db
-      .prepare(
+  private prepareFilesQuery = (): D1PreparedStatement =>
+    this.bindVars(
+      this.db.prepare(
         `
       SELECT
         files.id,
@@ -88,17 +100,14 @@ export class GetArtifactQuery {
       JOIN
         artifact_versions ON artifact_versions.artifact = artifacts.id
       JOIN
-        ${LATEST_ARTIFACT_JOIN_SQL}
-      WHERE
-        artifact_versions.artifact_id = ?1
+        ${this.joinClause()}
       `
       )
-      .bind(this.artifactId);
-  };
+    );
 
-  private prepareFileAliasesQuery = (): D1PreparedStatement => {
-    return this.db
-      .prepare(
+  private prepareFileAliasesQuery = (): D1PreparedStatement =>
+    this.bindVars(
+      this.db.prepare(
         `
       SELECT
         file_aliases.file,
@@ -112,19 +121,17 @@ export class GetArtifactQuery {
       JOIN
         artifact_versions ON artifact_versions.artifact = artifacts.id
       JOIN
-        ${LATEST_ARTIFACT_JOIN_SQL}
-      WHERE
-        artifact_versions.artifact_id = ?1
+        ${this.joinClause()}
       `
       )
-      .bind(this.artifactId);
-  };
+    );
 
-  private prepareLinksQuery = (): D1PreparedStatement => {
-    return this.db
-      .prepare(
+  private prepareLinksQuery = (): D1PreparedStatement =>
+    this.bindVars(
+      this.db.prepare(
         `
       SELECT
+        links.artifact,
         links.name,
         links.url
       FROM
@@ -134,19 +141,17 @@ export class GetArtifactQuery {
       JOIN
         artifact_versions ON artifact_versions.artifact = artifacts.id
       JOIN
-        ${LATEST_ARTIFACT_JOIN_SQL}
-      WHERE
-        artifact_versions.artifact_id = ?1
+        ${this.joinClause()}
       `
       )
-      .bind(this.artifactId);
-  };
+    );
 
-  private preparePeopleQuery = (): D1PreparedStatement => {
-    return this.db
-      .prepare(
+  private preparePeopleQuery = (): D1PreparedStatement =>
+    this.bindVars(
+      this.db.prepare(
         `
       SELECT
+        people.artifact,
         people.name
       FROM
         people
@@ -155,19 +160,17 @@ export class GetArtifactQuery {
       JOIN
         artifact_versions ON artifact_versions.artifact = artifacts.id
       JOIN
-        ${LATEST_ARTIFACT_JOIN_SQL}
-      WHERE
-        artifact_versions.artifact_id = ?1
+        ${this.joinClause()}
       `
       )
-      .bind(this.artifactId);
-  };
+    );
 
-  private prepareIdentitiesQuery = (): D1PreparedStatement => {
-    return this.db
-      .prepare(
+  private prepareIdentitiesQuery = (): D1PreparedStatement =>
+    this.bindVars(
+      this.db.prepare(
         `
       SELECT
+        identities.artifact,
         identities.name
       FROM
         identities
@@ -176,19 +179,17 @@ export class GetArtifactQuery {
       JOIN
         artifact_versions ON artifact_versions.artifact = artifacts.id
       JOIN
-        ${LATEST_ARTIFACT_JOIN_SQL}
-      WHERE
-        artifact_versions.artifact_id = ?1
+        ${this.joinClause()}
       `
       )
-      .bind(this.artifactId);
-  };
+    );
 
-  private prepareDecadesQuery = (): D1PreparedStatement => {
-    return this.db
-      .prepare(
+  private prepareDecadesQuery = (): D1PreparedStatement =>
+    this.bindVars(
+      this.db.prepare(
         `
       SELECT
+        decades.artifact,
         decades.decade
       FROM
         decades
@@ -197,20 +198,17 @@ export class GetArtifactQuery {
       JOIN
         artifact_versions ON artifact_versions.artifact = artifacts.id
       JOIN
-        ${LATEST_ARTIFACT_JOIN_SQL}
-      WHERE
-        artifact_versions.artifact_id = ?1
+        ${this.joinClause()}
       `
       )
-      .bind(this.artifactId);
-  };
+    );
 
-  query = async (): Promise<Artifact | undefined> => {
+  query = async (): Promise<ReadonlyArray<Artifact>> => {
     // The typing for the batch API seems to expect that every row will have the
     // same shape.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = await this.db.batch<any>([
-      this.prepareArtifactQuery(),
+      this.prepareArtifactsQuery(),
       this.prepareArtifactAliasesQuery(),
       this.prepareFilesQuery(),
       this.prepareFileAliasesQuery(),
@@ -233,28 +231,33 @@ export class GetArtifactQuery {
       rows[6].results;
     const decadesRows: ReadonlyArray<DecadesRow> | undefined = rows[7].results;
 
-    const artifactsRow =
-      artifactsRows === undefined ? undefined : artifactsRows[0];
-
-    if (artifactsRow === undefined) {
-      return undefined;
+    if (artifactsRows === undefined) {
+      return [];
     }
 
-    return {
+    const artifactAliasesMap = rowsToMap(
+      artifactAliasesRows,
+      (row) => row.artifact
+    );
+    const filesMap = rowsToMap(filesRows, (row) => row.artifact);
+    const fileAliasesMap = rowsToMap(fileAliasesRows, (row) => row.file);
+    const linksMap = rowsToMap(linksRows, (row) => row.artifact);
+    const peopleMap = rowsToMap(peopleRows, (row) => row.artifact);
+    const identitiesMap = rowsToMap(identitiesRows, (row) => row.artifact);
+    const decadesMap = rowsToMap(decadesRows, (row) => row.artifact);
+
+    return artifactsRows.map((artifactsRow) => ({
       files:
-        filesRows?.map((file) => ({
-          aliases:
-            fileAliasesRows?.filter(
-              (fileAliasesRow) => fileAliasesRow.file === file.id
-            ) ?? [],
-          ...file,
+        filesMap.get(artifactsRow.id)?.map((filesRow) => ({
+          aliases: fileAliasesMap.get(filesRow.id) ?? [],
+          ...filesRow,
         })) ?? [],
-      links: linksRows ?? [],
-      people: peopleRows ?? [],
-      identities: identitiesRows ?? [],
-      decades: decadesRows ?? [],
-      aliases: artifactAliasesRows ?? [],
+      links: linksMap.get(artifactsRow.id) ?? [],
+      people: peopleMap.get(artifactsRow.id) ?? [],
+      identities: identitiesMap.get(artifactsRow.id) ?? [],
+      decades: decadesMap.get(artifactsRow.id) ?? [],
+      aliases: artifactAliasesMap.get(artifactsRow.id) ?? [],
       ...artifactsRow,
-    };
+    }));
   };
 }
