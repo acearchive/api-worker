@@ -1,5 +1,11 @@
 import { base64url } from "rfc4648";
 
+//
+// We're doing a lot of low-level crypto stuff by hand here. This is typically a
+// bad idea, but we're only using it to encrypt the pagination cursor, which
+// contains no sensitive data.
+//
+
 const algorithmName = "AES-GCM";
 const keyLenBits = 128;
 const keyFormat = "jwk";
