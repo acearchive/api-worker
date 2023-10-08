@@ -2,6 +2,7 @@ import { ErrorResponse } from "./response";
 import { OKResponse as OkResponse } from "./response";
 import { GetArtifactQuery } from "./db/single";
 import { toApi } from "./db/model";
+import { Cursor } from "./cursor";
 
 export const getArtifact = async ({
   artifactId,
@@ -30,58 +31,17 @@ export const getArtifact = async ({
   }
 };
 
-/*
 export const listArtifacts = async ({
-  cursor: encodedCursor,
+  cursor,
   limit,
-  env,
+  db,
   method,
 }: {
-  cursor?: string;
+  cursor?: Cursor;
   limit: number;
-  env: Env;
+  db: D1Database;
   method: "GET" | "HEAD";
 }): Promise<Response> => {
-  let cursor: Cursor | undefined = undefined;
-
-  if (encodedCursor !== undefined) {
-    const cursorDecodeResult = await decodeCursor({
-      cursor: encodedCursor,
-      rawEncryptionKey: env.CURSOR_ENCRYPTION_KEY,
-    });
-
-    if (!cursorDecodeResult.valid) {
-      return ErrorResponse.malformedRequest(
-        "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
-        `/artifacts/?cursor=${encodedCursor}`
-      );
-    }
-
-    cursor = cursorDecodeResult.cursor;
-  }
-
-  const artifactList: ReadonlyArray<ArtifactData> | undefined | null =
-    await env.ARTIFACTS_KV.get(artifactsListKey, {
-      type: "json",
-    });
-
-  if (artifactList === undefined || artifactList === null) {
-    // There is no reason why this KV pair should not exist.
-    throw new Error(unexpectedCursorErrorDetail);
-  }
-
-  const responseObj = await nextPageFromCursor({
-    artifacts: artifactList,
-    limit,
-    cursor,
-    env,
-  });
-
-  switch (method) {
-    case "HEAD":
-      return OkResponse.json(200);
-    case "GET":
-      return OkResponse.json(200, responseObj);
-  }
+  // TODO: Implement
+  throw new Error("not implemented");
 };
-*/

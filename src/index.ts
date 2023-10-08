@@ -1,4 +1,5 @@
 import { Router } from "itty-router";
+import { decodeCursor } from "./cursor";
 import { getArtifact, listArtifacts } from "./handlers";
 import { ErrorResponse, OKResponse } from "./response";
 import { defaultPaginationLimit, isBlank, validateLimit } from "./validation";
@@ -36,7 +37,7 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
   if (query === undefined) {
     return listArtifacts({
       limit: defaultPaginationLimit,
-      env,
+      db: env.DB,
       method,
     });
   }
@@ -50,9 +51,26 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
   }
 
   const limit = limitValidationResult.value;
-  const cursor = isBlank(rawCursor) ? undefined : rawCursor;
+  const cursorResult = isBlank(rawCursor)
+    ? undefined
+    : await decodeCursor({
+        cursor: rawCursor,
+        rawEncryptionKey: env.CURSOR_ENCRYPTION_KEY,
+      });
 
-  return listArtifacts({ limit, cursor, env, method });
+  if (cursorResult !== undefined && !cursorResult.valid) {
+    return ErrorResponse.malformedRequest(
+      "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
+      `/artifacts/?cursor=${rawCursor}`
+    );
+  }
+
+  return listArtifacts({
+    cursor: cursorResult?.cursor,
+    limit,
+    db: env.DB,
+    method,
+  });
 });
 
 router.all("*", ({ url }) => ErrorResponse.endpointNotFound(new URL(url)));
