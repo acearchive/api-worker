@@ -53,7 +53,7 @@ const newErrorResponse = async (
 };
 
 export const ErrorResponse = {
-  methodNotAllowed: async (
+  methodNotAllowed: (
     actual: string,
     allowed: ReadonlyArray<Method>
   ): Promise<Response> =>
@@ -68,7 +68,7 @@ export const ErrorResponse = {
         Allow: allowed.join(", "),
       }
     ),
-  endpointNotFound: async (url: URL): Promise<Response> =>
+  endpointNotFound: (url: URL): Promise<Response> =>
     newErrorResponse({
       type: "/problems/endpoint-not-found",
       title: "Endpoint Not Found",
@@ -76,10 +76,7 @@ export const ErrorResponse = {
       detail: `There is no such endpoint '${url.pathname}'.`,
       instance: url.pathname,
     }),
-  malformedRequest: async (
-    detail: string,
-    instance: string
-  ): Promise<Response> =>
+  malformedRequest: (detail: string, instance: string): Promise<Response> =>
     newErrorResponse({
       type: "/problems/malformed-request",
       title: "Malformed Request",
@@ -87,7 +84,7 @@ export const ErrorResponse = {
       detail,
       instance,
     }),
-  badQueryParam: async ({
+  badQueryParam: ({
     params,
     endpoint,
   }: {
@@ -99,15 +96,24 @@ export const ErrorResponse = {
     const badKey = Object.keys(params)[0];
     const badValue = params[badKey];
 
-    return await newErrorResponse({
-      type: "/problems/invalid-parameter",
-      title: "Invalid Query Parameter",
+    return newErrorResponse({
+      type: "/problems/unrecognized-parameter",
+      title: "Unrecognized Query Parameter",
       status: 400,
       detail: `This is not a valid query parameter: '${badKey}'.`,
       instance: `${endpoint}/?${badKey}=${badValue}`,
     });
   },
-  artifactNotFound: async (artifactId: string): Promise<Response> =>
+  badCursor: (cursor: string): Promise<Response> =>
+    newErrorResponse({
+      type: "/problems/invalid-cursor",
+      title: "Invalid Cursor",
+      status: 400,
+      detail:
+        "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
+      instance: `/artifacts/?cursor=${cursor}`,
+    }),
+  artifactNotFound: (artifactId: string): Promise<Response> =>
     newErrorResponse({
       type: "/problems/artifact-not-found",
       title: "Artifact Not Found",
@@ -116,7 +122,7 @@ export const ErrorResponse = {
       instance: `/artifacts/${artifactId}`,
     }),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  unexpectedError: async (reason: any): Promise<Response> =>
+  unexpectedError: (reason: any): Promise<Response> =>
     newErrorResponse({
       type: "/problems/unexpected-error",
       title: "Unexpected Error",

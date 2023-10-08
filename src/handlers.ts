@@ -55,10 +55,7 @@ export const listArtifacts = async ({
         });
 
   if (cursorResult !== undefined && !cursorResult.valid) {
-    return ErrorResponse.malformedRequest(
-      "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
-      `/artifacts/?cursor=${encodedCursor}`
-    );
+    return ErrorResponse.badCursor(encodedCursor ?? "");
   }
 
   const query = new GetArtifactListQuery(db, cursorResult?.cursor, limit);
