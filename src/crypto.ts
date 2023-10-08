@@ -14,11 +14,19 @@ const generateIV = (): Uint8Array =>
 const getCursorEncryptionKey = (rawKey: string): Promise<CryptoKey> => {
   let memoizedKey: CryptoKey | undefined = undefined;
 
+  let jsonWebKey: JsonWebKey;
+
+  try {
+    jsonWebKey = JSON.parse(rawKey);
+  } catch (e) {
+    throw new Error(`Failed to import cursor encryption key: ${e}`);
+  }
+
   return (async (): Promise<CryptoKey> => {
     if (memoizedKey === undefined) {
       const key = await crypto.subtle.importKey(
         keyFormat,
-        JSON.parse(rawKey) as JsonWebKey,
+        jsonWebKey,
         {
           name: algorithmName,
           length: keyLenBits,
