@@ -19,7 +19,7 @@ export const LATEST_ARTIFACT_JOIN_SQL = `
   AND latest_artifacts.version = artifact_versions.version
 ` as const;
 
-// A subquery to get a page of artifacts using a cursor.
+// A JOIN clause to get a page of artifacts using a cursor.
 export const CURSOR_PAGE_JOIN_SQL = `
   (
     SELECT
@@ -38,7 +38,7 @@ export const CURSOR_PAGE_JOIN_SQL = `
   ON artifacts_page.artifact_id = artifact_versions.artifact_id
 ` as const;
 
-// A subquery to get the first page of artifacts.
+// A JOIN clause to get the first page of artifacts.
 export const FIRST_PAGE_JOIN_SQL = `
   (
     SELECT

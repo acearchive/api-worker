@@ -205,7 +205,7 @@ export class GetArtifactQuery {
       .bind(this.artifactId);
   };
 
-  query = async (): Promise<Artifact | undefined> => {
+  run = async (): Promise<Artifact | undefined> => {
     // The typing for the batch API seems to expect that every row will have the
     // same shape.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -11,7 +11,11 @@ import {
   PeopleRow,
   rowsToMap,
 } from "./model";
-import { CURSOR_PAGE_JOIN_SQL, FIRST_PAGE_JOIN_SQL } from "./sql";
+import {
+  CURSOR_PAGE_JOIN_SQL,
+  FIRST_PAGE_JOIN_SQL,
+  LATEST_ARTIFACT_JOIN_SQL,
+} from "./sql";
 
 export class GetArtifactListQuery {
   private readonly db: D1Database;
@@ -37,6 +41,22 @@ export class GetArtifactListQuery {
 
   private joinClause = (): string =>
     this.cursor === undefined ? FIRST_PAGE_JOIN_SQL : CURSOR_PAGE_JOIN_SQL;
+
+  private prepareLastCursorQuery = (): D1PreparedStatement =>
+    this.bindVars(
+      this.db.prepare(
+        `
+      SELECT
+        MAX(artifacts.artifact_id) AS last_cursor
+      FROM
+        artifacts
+      JOIN
+        artifact_versions ON artifact_versions.artifact = artifacts.id
+      JOIN
+          ${LATEST_ARTIFACT_JOIN_SQL}
+      `
+      )
+    );
 
   private prepareArtifactsQuery = (): D1PreparedStatement =>
     this.bindVars(
@@ -203,7 +223,10 @@ export class GetArtifactListQuery {
       )
     );
 
-  query = async (): Promise<ReadonlyArray<Artifact>> => {
+  run = async (): Promise<{
+    artifacts: ReadonlyArray<Artifact>;
+    lastCursor: string;
+  }> => {
     // The typing for the batch API seems to expect that every row will have the
     // same shape.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -216,6 +239,7 @@ export class GetArtifactListQuery {
       this.preparePeopleQuery(),
       this.prepareIdentitiesQuery(),
       this.prepareDecadesQuery(),
+      this.prepareLastCursorQuery(),
     ]);
 
     const artifactsRows: ReadonlyArray<ArtifactsRow> | undefined =
@@ -231,8 +255,14 @@ export class GetArtifactListQuery {
       rows[6].results;
     const decadesRows: ReadonlyArray<DecadesRow> | undefined = rows[7].results;
 
-    if (artifactsRows === undefined) {
-      return [];
+    const lastCursorRows: ReadonlyArray<{ last_cursor: string }> | undefined =
+      rows[8].results;
+
+    const lastCursorRow =
+      lastCursorRows === undefined ? undefined : lastCursorRows[0];
+
+    if (artifactsRows === undefined || lastCursorRow === undefined) {
+      return { artifacts: [], lastCursor: "" };
     }
 
     const artifactAliasesMap = rowsToMap(
@@ -246,18 +276,21 @@ export class GetArtifactListQuery {
     const identitiesMap = rowsToMap(identitiesRows, (row) => row.artifact);
     const decadesMap = rowsToMap(decadesRows, (row) => row.artifact);
 
-    return artifactsRows.map((artifactsRow) => ({
-      files:
-        filesMap.get(artifactsRow.id)?.map((filesRow) => ({
-          aliases: fileAliasesMap.get(filesRow.id) ?? [],
-          ...filesRow,
-        })) ?? [],
-      links: linksMap.get(artifactsRow.id) ?? [],
-      people: peopleMap.get(artifactsRow.id) ?? [],
-      identities: identitiesMap.get(artifactsRow.id) ?? [],
-      decades: decadesMap.get(artifactsRow.id) ?? [],
-      aliases: artifactAliasesMap.get(artifactsRow.id) ?? [],
-      ...artifactsRow,
-    }));
+    return {
+      artifacts: artifactsRows.map((artifactsRow) => ({
+        files:
+          filesMap.get(artifactsRow.id)?.map((filesRow) => ({
+            aliases: fileAliasesMap.get(filesRow.id) ?? [],
+            ...filesRow,
+          })) ?? [],
+        links: linksMap.get(artifactsRow.id) ?? [],
+        people: peopleMap.get(artifactsRow.id) ?? [],
+        identities: identitiesMap.get(artifactsRow.id) ?? [],
+        decades: decadesMap.get(artifactsRow.id) ?? [],
+        aliases: artifactAliasesMap.get(artifactsRow.id) ?? [],
+        ...artifactsRow,
+      })),
+      lastCursor: lastCursorRow.last_cursor,
+    };
   };
 }
