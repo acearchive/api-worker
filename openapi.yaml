@@ -68,7 +68,7 @@ paths:
 
             Each page (except the final page) includes a cursor which can be
             passed as a query argument to get the next page.
-          example: "Y89zOPPH-vJ36hizeSPlGJY-svrS_PuAIScz77HsZuuWQ8nYhgJzgsOZ0K-WmxoXAiChVZVirpCNZw=="
+          example: "VaM54yM_H-n1OeKtb_sHCWWQhQlMtlSlT9KKvVlI1XpkFYo4oxQoJ_bJQ6Bcppl1zAr3U68eDdSA"
           schema:
             type: string
         - name: "limit"
