@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "itty-router": "^2.6.6",
+    "multiformats": "^12.1.2",
     "rfc4648": "^1.5.2"
   }
 }

@@ -1,5 +1,5 @@
 import { Artifact as ApiArtifact } from "../api";
-import { decodeMultihash } from "./multihash";
+import { decodeMultihash } from "../multihash";
 
 type ArtifactKey = number;
 type FileKey = number;
