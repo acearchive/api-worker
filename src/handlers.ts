@@ -2,10 +2,9 @@ import { ErrorResponse } from "./response";
 import { OKResponse as OkResponse } from "./response";
 import { GetArtifactQuery } from "./db/single";
 import { toApi } from "./db/model";
-import { Cursor, decodeCursor, encodeCursor } from "./cursor";
+import { decodeCursor, encodeCursor } from "./cursor";
 import { GetArtifactListQuery } from "./db/multiple";
 import { ArtifactList } from "./api";
-import { isBlank } from "./validation";
 
 export const getArtifact = async ({
   artifactId,
@@ -41,18 +40,19 @@ export const listArtifacts = async ({
   db,
   method,
 }: {
-  encodedCursor: string;
+  encodedCursor?: string;
   cursorKey: string;
   limit: number;
   db: D1Database;
   method: "GET" | "HEAD";
 }): Promise<Response> => {
-  const cursorResult = isBlank(encodedCursor)
-    ? undefined
-    : await decodeCursor({
-        cursor: encodedCursor,
-        rawEncryptionKey: cursorKey,
-      });
+  const cursorResult =
+    encodedCursor === undefined
+      ? undefined
+      : await decodeCursor({
+          cursor: encodedCursor,
+          rawEncryptionKey: cursorKey,
+        });
 
   if (cursorResult !== undefined && !cursorResult.valid) {
     return ErrorResponse.malformedRequest(

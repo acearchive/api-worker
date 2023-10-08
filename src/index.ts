@@ -55,7 +55,7 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
   const limit = limitValidationResult.value;
 
   return listArtifacts({
-    encodedCursor: rawCursor,
+    encodedCursor: isBlank(rawCursor) ? undefined : rawCursor,
     cursorKey: env.CURSOR_ENCRYPTION_KEY,
     limit,
     db: env.DB,
