@@ -46,7 +46,6 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
 
   if (query === undefined) {
     return await listArtifacts({
-      encodedCursor: "",
       cursorKey: env.CURSOR_ENCRYPTION_KEY,
       limit: defaultPaginationLimit,
       db: env.DB,
