@@ -4,11 +4,10 @@ import { decrypt, encrypt } from "./crypto";
 export type Cursor = Readonly<{
   // This is a discriminant in case we want to support sorting by different
   // criteria. Currently, we only support sorting by the artifact ID.
-  k: "id";
+  key: "id";
 
-  // The last value in the previous page. The specific value depends on the
-  // discriminant.
-  v: string;
+  // The artifact ID of the last value in the previous page.
+  id: string;
 }>;
 
 //

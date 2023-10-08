@@ -78,8 +78,8 @@ export const listArtifacts = async ({
       items: artifacts,
       next_cursor: await encodeCursor({
         cursor: {
-          k: "id",
-          v: artifacts[artifacts.length - 1].id,
+          key: "id",
+          id: artifacts[artifacts.length - 1].id,
         },
         rawEncryptionKey: cursorKey,
       }),

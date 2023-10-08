@@ -23,7 +23,7 @@ export class GetArtifactListQuery {
   private readonly limit: number;
 
   constructor(db: D1Database, cursor: Cursor | undefined, limit: number) {
-    if (cursor !== undefined && cursor.k !== "id") {
+    if (cursor !== undefined && cursor.key !== "id") {
       throw new Error(
         "Pagination cursor has an unrecognized discriminant. This is a bug."
       );
@@ -37,7 +37,7 @@ export class GetArtifactListQuery {
   private bindVars = (stmt: D1PreparedStatement): D1PreparedStatement =>
     this.cursor === undefined
       ? stmt.bind(this.limit)
-      : stmt.bind(this.cursor.v, this.limit);
+      : stmt.bind(this.cursor.id, this.limit);
 
   private joinClause = (): string =>
     this.cursor === undefined ? FIRST_PAGE_JOIN_SQL : CURSOR_PAGE_JOIN_SQL;
