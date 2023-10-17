@@ -1,5 +1,4 @@
-import { ErrorResponse } from "./response";
-import { OKResponse as OkResponse } from "./response";
+import { ArtifactNotFound, OkResponse as OkResponse } from "./response";
 import { GetArtifactQuery } from "./db/single";
 import { toApi } from "./db/model";
 import { decodeCursor, encodeCursor } from "./cursor";
@@ -20,7 +19,7 @@ export const getArtifact = async ({
   const artifactRow = await query.run();
 
   if (artifactRow === undefined) {
-    return ErrorResponse.artifactNotFound(artifactId);
+    throw ArtifactNotFound(artifactId);
   }
 
   const artifact = toApi(artifactRow);
@@ -46,7 +45,7 @@ export const listArtifacts = async ({
   db: D1Database;
   method: "GET" | "HEAD";
 }): Promise<Response> => {
-  const cursorResult =
+  const cursor =
     encodedCursor === undefined
       ? undefined
       : await decodeCursor({
@@ -54,11 +53,7 @@ export const listArtifacts = async ({
           rawEncryptionKey: cursorKey,
         });
 
-  if (cursorResult !== undefined && !cursorResult.valid) {
-    return ErrorResponse.badCursor(encodedCursor ?? "");
-  }
-
-  const query = new GetArtifactListQuery(db, cursorResult?.cursor, limit);
+  const query = new GetArtifactListQuery(db, cursor, limit);
   const { artifacts: artifactRows, lastCursor } = await query.run();
 
   const artifacts = artifactRows.map(toApi);

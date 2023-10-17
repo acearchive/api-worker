@@ -1,6 +1,13 @@
 import { Router } from "itty-router";
 import { getArtifact, listArtifacts } from "./handlers";
-import { ErrorResponse, OKResponse } from "./response";
+import {
+  EndpointNotFound,
+  MethodNotAllowed,
+  OkResponse,
+  ResponseError,
+  UnexpectedError,
+  UnrecognizedQueryParams,
+} from "./response";
 import { defaultPaginationLimit, isBlank, validateLimit } from "./validation";
 
 export interface Env {
@@ -13,15 +20,11 @@ const majorApiVersion = 0;
 
 const router = Router({ base: `/v${majorApiVersion}` });
 
-router.options("*", () => OKResponse.options());
+router.options("*", () => OkResponse.options());
 
 router.all("/artifacts/:id", async ({ params, method, query }, env: Env) => {
   if (method !== "GET" && method !== "HEAD") {
-    return await ErrorResponse.methodNotAllowed(method, [
-      "GET",
-      "HEAD",
-      "OPTIONS",
-    ]);
+    throw MethodNotAllowed(method, ["GET", "HEAD", "OPTIONS"]);
   }
 
   const artifactId = params?.id;
@@ -30,7 +33,7 @@ router.all("/artifacts/:id", async ({ params, method, query }, env: Env) => {
   }
 
   if (query !== undefined && Object.keys(query).length > 0) {
-    return await ErrorResponse.badQueryParam({
+    throw UnrecognizedQueryParams({
       params: query,
       endpoint: `/artifacts/${artifactId}`,
     });
@@ -41,7 +44,7 @@ router.all("/artifacts/:id", async ({ params, method, query }, env: Env) => {
 
 router.all("/artifacts/", async ({ method, query }, env: Env) => {
   if (method !== "GET" && method !== "HEAD") {
-    return ErrorResponse.methodNotAllowed(method, ["GET", "HEAD", "OPTIONS"]);
+    throw MethodNotAllowed(method, ["GET", "HEAD", "OPTIONS"]);
   }
 
   if (query === undefined) {
@@ -56,19 +59,13 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
   const { limit: rawLimit, cursor: rawCursor, ...remaining } = query;
 
   if (Object.keys(remaining).length > 0) {
-    return await ErrorResponse.badQueryParam({
+    throw UnrecognizedQueryParams({
       params: remaining,
       endpoint: "/artifacts",
     });
   }
 
-  const limitValidationResult = await validateLimit(rawLimit);
-
-  if (!limitValidationResult.valid) {
-    return limitValidationResult.response;
-  }
-
-  const limit = limitValidationResult.value;
+  const limit = await validateLimit(rawLimit);
 
   return await listArtifacts({
     encodedCursor: isBlank(rawCursor) ? undefined : rawCursor,
@@ -79,15 +76,27 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
   });
 });
 
-router.all("*", ({ url }) => ErrorResponse.endpointNotFound(new URL(url)));
+router.all("*", ({ url }) => {
+  throw EndpointNotFound(new URL(url));
+});
 
 const rootRouter = Router();
 
 rootRouter.all(`/v${majorApiVersion}/*`, router.handle);
 
-rootRouter.all("*", ({ url }) => ErrorResponse.endpointNotFound(new URL(url)));
+rootRouter.all("*", ({ url }) => {
+  throw EndpointNotFound(new URL(url));
+});
 
 export default {
   fetch: (request: Request, env: Env) =>
-    rootRouter.handle(request, env).catch(ErrorResponse.unexpectedError),
+    router.handle(request, env).catch(async (err) => {
+      console.log(err.message);
+
+      if (err instanceof ResponseError) {
+        return await err.response();
+      } else {
+        return await UnexpectedError(err.message).response();
+      }
+    }),
 };

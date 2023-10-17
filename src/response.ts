@@ -35,101 +35,140 @@ const commonResponseHeaders = {
   [Header.AccessControlAllowHeaders]: "Content-Type",
 } as const;
 
-const newErrorResponse = async (
-  problem: ProblemInit,
-  headers?: ResponseHeaders
-): Promise<Response> => {
-  const responseBody = JSON.stringify(problem);
-  return new Response(responseBody, {
-    status: problem.status,
+export class ResponseError extends Error {
+  readonly problem: Problem;
+  readonly headers: Record<string, string>;
+
+  constructor({
+    type,
+    title,
+    status,
+    detail,
+    instance,
+    headers,
+  }: {
+    type: string;
+    title: string;
+    status: number;
+    detail: string;
+    instance?: string;
+    headers?: Record<string, string>;
+  }) {
+    super(detail);
+
+    this.problem = {
+      type,
+      title,
+      status,
+      detail,
+      instance,
+    };
+
+    this.headers = headers ?? {};
+  }
+
+  response = async (): Promise<Response> => {
+    const responseBody = JSON.stringify(this.problem);
+
+    return new Response(responseBody, {
+      status: this.problem.status,
+      headers: {
+        [Header.ContentType]: ContentType.Problem,
+        [Header.ContentLength]: responseBody.length.toString(10),
+        [Header.ETag]: await etagFromResponseBody(responseBody),
+        ...commonResponseHeaders,
+        ...this.headers,
+      },
+    });
+  };
+}
+
+export const MethodNotAllowed = (
+  actual: string,
+  allowed: ReadonlyArray<Method>
+): ResponseError =>
+  new ResponseError({
+    type: "/problems/method-not-allowed",
+    title: "Method Not Allowed",
+    status: 405,
+    detail: `The method '${actual}' is not allowed for this endpoint.`,
     headers: {
-      [Header.ContentType]: ContentType.Problem,
-      [Header.ContentLength]: responseBody.length.toString(10),
-      [Header.ETag]: await etagFromResponseBody(responseBody),
-      ...commonResponseHeaders,
-      ...headers,
+      Allow: allowed.join(", "),
     },
+  });
+
+export const EndpointNotFound = (url: URL): ResponseError =>
+  new ResponseError({
+    type: "/problems/endpoint-not-found",
+    title: "Endpoint Not Found",
+    status: 404,
+    detail: `There is no such endpoint: '${url.pathname}'.`,
+    instance: url.pathname,
+  });
+
+export const MalformedRequest = ({
+  detail,
+  instance,
+}: {
+  detail: string;
+  instance: string;
+}): ResponseError =>
+  new ResponseError({
+    type: "/problems/malformed-request",
+    title: "Malformed Request",
+    status: 400,
+    detail,
+    instance,
+  });
+
+export const UnrecognizedQueryParams = ({
+  params,
+  endpoint,
+}: {
+  params: Record<string, string>;
+  endpoint: string;
+}): ResponseError => {
+  // If the user passes multiple bad query params, we're only going to show
+  // the first one in the error message.
+  const badKey = Object.keys(params)[0];
+  const badValue = params[badKey];
+
+  return new ResponseError({
+    type: "/problems/unrecognized-parameter",
+    title: "Unrecognized Query Parameter",
+    status: 400,
+    detail: `This is not a valid query parameter: '${badKey}'.`,
+    instance: `${endpoint}/?${badKey}=${badValue}`,
   });
 };
 
-export const ErrorResponse = {
-  methodNotAllowed: (
-    actual: string,
-    allowed: ReadonlyArray<Method>
-  ): Promise<Response> =>
-    newErrorResponse(
-      {
-        type: "/problems/method-not-allowed",
-        status: 405,
-        title: "Method Not Allowed",
-        detail: `The method '${actual}' is not allowed for this endpoint.`,
-      },
-      {
-        Allow: allowed.join(", "),
-      }
-    ),
-  endpointNotFound: (url: URL): Promise<Response> =>
-    newErrorResponse({
-      type: "/problems/endpoint-not-found",
-      title: "Endpoint Not Found",
-      status: 404,
-      detail: `There is no such endpoint '${url.pathname}'.`,
-      instance: url.pathname,
-    }),
-  malformedRequest: (detail: string, instance: string): Promise<Response> =>
-    newErrorResponse({
-      type: "/problems/malformed-request",
-      title: "Malformed Request",
-      status: 400,
-      detail,
-      instance,
-    }),
-  badQueryParam: ({
-    params,
-    endpoint,
-  }: {
-    params: Record<string, string>;
-    endpoint: string;
-  }) => {
-    // If the user passes multiple bad query params, we're only going to show
-    // the first one in the error message.
-    const badKey = Object.keys(params)[0];
-    const badValue = params[badKey];
+export const InvalidCursor = (cursor: string): ResponseError =>
+  new ResponseError({
+    type: "/problems/invalid-cursor",
+    title: "Invalid Cursor",
+    status: 400,
+    detail:
+      "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
+    instance: `/artifacts/?cursor=${cursor}`,
+  });
 
-    return newErrorResponse({
-      type: "/problems/unrecognized-parameter",
-      title: "Unrecognized Query Parameter",
-      status: 400,
-      detail: `This is not a valid query parameter: '${badKey}'.`,
-      instance: `${endpoint}/?${badKey}=${badValue}`,
-    });
-  },
-  badCursor: (cursor: string): Promise<Response> =>
-    newErrorResponse({
-      type: "/problems/invalid-cursor",
-      title: "Invalid Cursor",
-      status: 400,
-      detail:
-        "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
-      instance: `/artifacts/?cursor=${cursor}`,
-    }),
-  artifactNotFound: (artifactId: string): Promise<Response> =>
-    newErrorResponse({
-      type: "/problems/artifact-not-found",
-      title: "Artifact Not Found",
-      status: 404,
-      detail: `Artifact with ID '${artifactId}' not found.`,
-      instance: `/artifacts/${artifactId}`,
-    }),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  unexpectedError: (reason: any): Promise<Response> =>
-    newErrorResponse({
-      type: "/problems/unexpected-error",
-      title: "Unexpected Error",
-      status: 500,
-      detail: reason.toString(),
-    }),
-};
+export const ArtifactNotFound = (artifactId: string): ResponseError =>
+  new ResponseError({
+    type: "/problems/artifact-not-found",
+    title: "Artifact Not Found",
+    status: 404,
+    detail: `Artifact with ID '${artifactId}' not found.`,
+    instance: `/artifacts/${artifactId}`,
+  });
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const UnexpectedError = (reason: any): ResponseError =>
+  new ResponseError({
+    type: "/problems/unexpected-error",
+    title: "Unexpected Error",
+    status: 500,
+    detail: reason.toString(),
+  });
 
 export type JsonValue =
   | string
@@ -141,7 +180,7 @@ export type JsonValue =
 
 export type JsonObject = Readonly<Record<string, JsonValue>>;
 
-export const OKResponse = {
+export const OkResponse = {
   json: async (
     status: number,
     obj?: JsonObject,

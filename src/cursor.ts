@@ -1,4 +1,5 @@
 import { decrypt, encrypt } from "./crypto";
+import { InvalidCursor } from "./response";
 
 // The deserialized representation of a cursor.
 export type Cursor = Readonly<{
@@ -32,24 +33,17 @@ export const encodeCursor = async ({
   rawEncryptionKey: string;
 }) => encrypt({ cleartext: JSON.stringify(cursor), rawEncryptionKey });
 
-export type DecodeResult = { valid: true; cursor: Cursor } | { valid: false };
-
 export const decodeCursor = async ({
   cursor,
   rawEncryptionKey,
 }: {
   cursor: string;
   rawEncryptionKey: string;
-}): Promise<DecodeResult> => {
+}): Promise<Cursor> => {
   try {
-    return {
-      valid: true,
-      cursor: JSON.parse(
-        await decrypt({ ciphertext: cursor, rawEncryptionKey })
-      ),
-    };
+    return JSON.parse(await decrypt({ ciphertext: cursor, rawEncryptionKey }));
   } catch (err) {
     console.log(`Failed to decode artifact cursor: ${err}`);
-    return { valid: false };
+    throw InvalidCursor(cursor ?? "");
   }
 };
