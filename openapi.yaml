@@ -366,6 +366,11 @@ components:
             multipleOf: 10
     Problem:
       type: object
+      required:
+        - type
+        - title
+        - status
+        - detail
       title: "Problem"
       description: |
         An [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807)
