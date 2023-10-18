@@ -1,15 +1,42 @@
 import { decrypt, encrypt } from "./crypto";
 import { InvalidCursor } from "./response";
+import { hash } from "object-hash";
+
+type QueryParamHash = string;
 
 // The deserialized representation of a cursor.
 export type Cursor = Readonly<{
-  // This is a discriminant in case we want to support sorting by different
-  // criteria. Currently, we only support sorting by the artifact ID.
-  key: "id";
-
   // The artifact ID of the last value in the previous page.
   id: string;
+
+  // A hash of the sort/filter query params passed in the previous query. We use
+  // this to ensure that the sorting and filtering params do not change between
+  // pages, as the expected behavior in that case would be difficult to reason
+  // about. If the sort/filter query params change between pages, we return an
+  // error response.
+  params: QueryParamHash;
 }>;
+
+export const hashQueryParams = ({
+  sort,
+  direction,
+  identities,
+  people,
+  decades,
+}: {
+  sort: string;
+  direction: string;
+  identities: string;
+  people: string;
+  decades: string;
+}): QueryParamHash =>
+  // The order of the properties in this object is unimportant; they're sorted
+  // for us before they're hashed. We truncate this hash to the first 32 bits to
+  // keep the cursor small.
+  hash(
+    { sort, direction, identities, people, decades },
+    { algorithm: "sha1", unorderedObjects: true, encoding: "hex" }
+  ).slice(0, 8);
 
 //
 // We encrypt the cursor before returning it to the client.
