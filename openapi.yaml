@@ -58,21 +58,24 @@ paths:
       description: |
         Page through artifacts in the archive.
 
-        The order of the returned artifacts when paging is consistent, but how
-        they are sorted (by date, by title, etc.) is unspecified.
+        The default sort order is unspecified.
       parameters:
         - name: "cursor"
-          in: "query"
+          in: query
           description: |
             An opaque string cursor for pagination.
 
             Each page (except the final page) includes a cursor which can be
-            passed as a query argument to get the next page.
-          example: "HDv61FcS0TO7v4UYKaFIWLpI5xiD8b7sn5_U5Xrjzm2cb0yoxLhcwXyBV0Ht8XsRBUxpmB8cUwlCI4OU"
+            passed as a query param to get the next page.
+
+            If you pass a cursor, then any sorting and filtering query params
+            must stay the same as in the previous query. You can't change the
+            sort order or filters partway through paging.
+          example: "Y89zOPPH-vJ36hizeSPlGJY-svrS_PuAIScz77HsZuuWQ8nYhgJzgsOZ0K-WmxoXAiChVZVirpCNZw=="
           schema:
             type: string
         - name: "limit"
-          in: "query"
+          in: query
           description: |
             The maximum number of artifacts to return in a page.
 
@@ -85,6 +88,72 @@ paths:
             default: 10
             minimum: 1
             maximum: 250
+        - name: "sort"
+          in: query
+          description: |
+            The sort order of the returned artifacts.
+
+            You can use this with `direction` to specify if the sort is
+            ascending or descending.
+
+            The default sort order is unspecified.
+
+            Changing this value between pages returns a 400 error.
+          example: "year"
+          schema:
+            type: string
+            enum:
+              - "year"
+        - name: "direction"
+          in: query
+          description: |
+            Whether to sort in ascending or descending order.
+
+            You can only use this parameter if you specify a `sort`. The default
+            is `asc`.
+
+            Changing this value between pages returns a 400 error.
+          example: "asc"
+          default: "asc"
+          schema:
+            type: string
+            enum:
+              - "asc"
+              - "desc"
+        - name: "identities"
+          in: query
+          description: |
+            Only return artifacts with one of these `identities`.
+
+            You can pass multiple identities separated by a comma.
+
+            Changing this value between pages returns a 400 error.
+          example: "asexual,aromantic"
+          schema:
+            type: string
+        - name: "people"
+          in: query
+          description: |
+            Only return artifacts with one of these `people`.
+
+            You can pass multiple names separated by a comma.
+
+            Changing this value between pages returns a 400 error.
+          example: "John Smith,Jane Appleseed"
+          schema:
+            type: string
+        - name: "decades"
+          in: query
+          description: |
+            Only return artifacts with one of these `decades`.
+
+            You can pass multiple decades separated by a comma.
+
+            Changing this value between pages returns a 400 error.
+          example: "1960,1970"
+          schema:
+            type: string
+            pattern: "^[0-9]{3}0(,[0-9]{3}0)*$"
       responses:
         "200":
           description: "OK"
@@ -111,9 +180,9 @@ paths:
                     description: |
                       An opaque string cursor for pagination.
 
-                      This cursor can be passed as a query argument to get the
-                      next page. If there is no `next_cursor`, then the current
-                      page is the final page.
+                      This cursor can be passed as a query param to get the next
+                      page. If there is no `next_cursor`, then the current page
+                      is the final page.
 
                       If there is a `next_cursor`, then there are more pages,
                       even if `items` is empty or smaller than the given
