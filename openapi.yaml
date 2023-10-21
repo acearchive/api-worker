@@ -123,37 +123,31 @@ paths:
         - name: "identities"
           in: query
           description: |
-            Only return artifacts with one of these `identities`.
-
-            You can pass multiple identities separated by a comma.
+            Only return artifacts with this value in `identities`.
 
             Changing this value between pages returns a 400 error.
-          example: "asexual,aromantic"
+          example: "aromantic"
           schema:
             type: string
         - name: "people"
           in: query
           description: |
-            Only return artifacts with one of these `people`.
-
-            You can pass multiple names separated by a comma.
+            Only return artifacts with this value in `people`.
 
             Changing this value between pages returns a 400 error.
-          example: "John Smith,Jane Appleseed"
+          example: "Lisa Orlando"
           schema:
             type: string
         - name: "decades"
           in: query
           description: |
-            Only return artifacts with one of these `decades`.
-
-            You can pass multiple decades separated by a comma.
+            Only return artifacts with this value in `decades`.
 
             Changing this value between pages returns a 400 error.
-          example: "1960,1970"
+          example: "1970"
           schema:
-            type: string
-            pattern: "^[0-9]{3}0(,[0-9]{3}0)*$"
+            type: integer
+            multipleOf: 10
       responses:
         "200":
           description: "OK"
