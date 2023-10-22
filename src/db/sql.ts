@@ -31,9 +31,12 @@ export const CURSOR_PAGE_JOIN_SQL = `
     WHERE
       artifact_versions.artifact_id > ?1
     ORDER BY
-      artifact_versions.artifact_id
+      CASE ?2
+        WHEN 'year' THEN artifacts.from_year
+        ELSE artifacts.artifact_id
+      END
     LIMIT
-      ?2
+      ?3
   ) AS artifacts_page
   ON artifacts_page.artifact_id = artifact_versions.artifact_id
 ` as const;
@@ -48,9 +51,12 @@ export const FIRST_PAGE_JOIN_SQL = `
     JOIN
       ${LATEST_ARTIFACT_JOIN_SQL}
     ORDER BY
-      artifact_versions.artifact_id
+      CASE ?1
+        WHEN 'year' THEN artifacts.from_year
+        ELSE artifacts.artifact_id
+      END
     LIMIT
-      ?1
+      ?2
   ) AS artifacts_page
   ON artifacts_page.artifact_id = artifact_versions.artifact_id
 ` as const;

@@ -17,27 +17,35 @@ import {
   LATEST_ARTIFACT_JOIN_SQL,
 } from "./sql";
 
+export type SortOrder = "id" | "year";
+
 export class GetArtifactListQuery {
   private readonly db: D1Database;
   private readonly cursor?: Cursor;
   private readonly limit: number;
+  private readonly order: SortOrder;
 
-  constructor(db: D1Database, cursor: Cursor | undefined, limit: number) {
-    if (cursor !== undefined && cursor.key !== "id") {
-      throw new Error(
-        "Pagination cursor has an unrecognized discriminant. This is a bug."
-      );
-    }
-
+  constructor({
+    db,
+    cursor,
+    order,
+    limit,
+  }: {
+    db: D1Database;
+    cursor: Cursor | undefined;
+    order: SortOrder;
+    limit: number;
+  }) {
     this.db = db;
     this.cursor = cursor;
+    this.order = order;
     this.limit = limit;
   }
 
   private bindVars = (stmt: D1PreparedStatement): D1PreparedStatement =>
     this.cursor === undefined
-      ? stmt.bind(this.limit)
-      : stmt.bind(this.cursor.id, this.limit);
+      ? stmt.bind(this.order, this.limit)
+      : stmt.bind(this.cursor.id, this.order, this.limit);
 
   private joinClause = (): string =>
     this.cursor === undefined ? FIRST_PAGE_JOIN_SQL : CURSOR_PAGE_JOIN_SQL;

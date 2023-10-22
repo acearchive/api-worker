@@ -8,7 +8,13 @@ import {
   UnexpectedError,
   UnrecognizedQueryParams,
 } from "./response";
-import { defaultPaginationLimit, isBlank, validateLimit } from "./validation";
+import {
+  defaultPaginationLimit,
+  defaultSortOrder,
+  isBlank,
+  validateLimit,
+  validateSortOrder,
+} from "./validation";
 
 export interface Env {
   DB: D1Database;
@@ -51,12 +57,18 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
     return await listArtifacts({
       cursorKey: env.CURSOR_ENCRYPTION_KEY,
       limit: defaultPaginationLimit,
+      order: defaultSortOrder,
       db: env.DB,
       method,
     });
   }
 
-  const { limit: rawLimit, cursor: rawCursor, ...remaining } = query;
+  const {
+    limit: rawLimit,
+    cursor: rawCursor,
+    sort: rawOrder,
+    ...remaining
+  } = query;
 
   if (Object.keys(remaining).length > 0) {
     throw UnrecognizedQueryParams({
@@ -66,11 +78,13 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
   }
 
   const limit = await validateLimit(rawLimit);
+  const order = validateSortOrder(rawOrder);
 
   return await listArtifacts({
     encodedCursor: isBlank(rawCursor) ? undefined : rawCursor,
     cursorKey: env.CURSOR_ENCRYPTION_KEY,
     limit,
+    order,
     db: env.DB,
     method,
   });
