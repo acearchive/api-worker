@@ -19,33 +19,35 @@ import {
 
 export type SortOrder = "id" | "year";
 
+export type SortDirection = "asc" | "desc";
+
 export class GetArtifactListQuery {
   private readonly db: D1Database;
   private readonly cursor?: Cursor;
   private readonly limit: number;
-  private readonly order: SortOrder;
+  private readonly sort: SortOrder;
 
   constructor({
     db,
     cursor,
-    order,
+    sort,
     limit,
   }: {
     db: D1Database;
     cursor: Cursor | undefined;
-    order: SortOrder;
+    sort: SortOrder;
     limit: number;
   }) {
     this.db = db;
     this.cursor = cursor;
-    this.order = order;
+    this.sort = sort;
     this.limit = limit;
   }
 
   private bindVars = (stmt: D1PreparedStatement): D1PreparedStatement =>
     this.cursor === undefined
-      ? stmt.bind(this.order, this.limit)
-      : stmt.bind(this.cursor.id, this.order, this.limit);
+      ? stmt.bind(this.sort, this.limit)
+      : stmt.bind(this.cursor.id, this.sort, this.limit);
 
   private joinClause = (): string =>
     this.cursor === undefined ? FIRST_PAGE_JOIN_SQL : CURSOR_PAGE_JOIN_SQL;

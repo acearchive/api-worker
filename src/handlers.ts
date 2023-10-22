@@ -1,9 +1,10 @@
 import { ArtifactNotFound, OkResponse as OkResponse } from "./response";
 import { GetArtifactQuery } from "./db/single";
 import { toApi } from "./db/model";
-import { decodeCursor, encodeCursor } from "./cursor";
-import { GetArtifactListQuery, SortOrder } from "./db/multiple";
+import { decodeCursor, encodeCursor, hashQueryParams } from "./cursor";
+import { GetArtifactListQuery, SortDirection, SortOrder } from "./db/multiple";
 import { ArtifactList } from "./api";
+import { validateCursor } from "./validation";
 
 export const getArtifact = async ({
   artifactId,
@@ -36,14 +37,22 @@ export const listArtifacts = async ({
   encodedCursor,
   cursorKey,
   limit,
-  order,
+  sort,
+  direction,
+  identities,
+  people,
+  decades,
   db,
   method,
 }: {
   encodedCursor?: string;
   cursorKey: string;
+  sort: SortOrder;
+  direction: SortDirection;
+  identities?: string;
+  people?: string;
+  decades?: string;
   limit: number;
-  order: SortOrder;
   db: D1Database;
   method: "GET" | "HEAD";
 }): Promise<Response> => {
@@ -55,7 +64,11 @@ export const listArtifacts = async ({
           rawEncryptionKey: cursorKey,
         });
 
-  const query = new GetArtifactListQuery({ db, cursor, order, limit });
+  if (cursor !== undefined) {
+    validateCursor({ cursor, sort, direction, identities, people, decades });
+  }
+
+  const query = new GetArtifactListQuery({ db, cursor, sort, limit });
   const { artifacts: artifactRows, lastCursor } = await query.run();
 
   const artifacts = artifactRows.map(toApi);
@@ -75,8 +88,14 @@ export const listArtifacts = async ({
       items: artifacts,
       next_cursor: await encodeCursor({
         cursor: {
-          key: "id",
           id: artifacts[artifacts.length - 1].id,
+          params: hashQueryParams({
+            sort,
+            direction,
+            identities,
+            people,
+            decades,
+          }),
         },
         rawEncryptionKey: cursorKey,
       }),

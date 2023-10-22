@@ -142,6 +142,20 @@ export const UnrecognizedQueryParams = ({
   });
 };
 
+export const InconsistentSortParams = (
+  params: Record<string, string>
+): ResponseError =>
+  new ResponseError({
+    type: "/problems/inconsistent-sort-params",
+    title: "Inconsistent Sort Parameters",
+    status: 400,
+    detail:
+      "The sort and filter parameters have changed since the previous page. These parameters need to be consistent between pages.",
+    instance: `/artifacts/?${Object.entries(params)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("&")}`,
+  });
+
 export const InvalidCursor = (cursor: string): ResponseError =>
   new ResponseError({
     type: "/problems/invalid-cursor",

@@ -10,6 +10,7 @@ import {
 } from "./response";
 import {
   defaultPaginationLimit,
+  defaultSortDirection,
   defaultSortOrder,
   isBlank,
   validateLimit,
@@ -57,7 +58,8 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
     return await listArtifacts({
       cursorKey: env.CURSOR_ENCRYPTION_KEY,
       limit: defaultPaginationLimit,
-      order: defaultSortOrder,
+      sort: defaultSortOrder,
+      direction: defaultSortDirection,
       db: env.DB,
       method,
     });
@@ -78,13 +80,14 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
   }
 
   const limit = await validateLimit(rawLimit);
-  const order = validateSortOrder(rawOrder);
+  const sort = validateSortOrder(rawOrder);
 
   return await listArtifacts({
     encodedCursor: isBlank(rawCursor) ? undefined : rawCursor,
     cursorKey: env.CURSOR_ENCRYPTION_KEY,
     limit,
-    order,
+    sort: sort,
+    direction: defaultSortDirection,
     db: env.DB,
     method,
   });

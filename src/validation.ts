@@ -1,5 +1,6 @@
-import { SortOrder } from "./db/multiple";
-import { MalformedRequest } from "./response";
+import { Cursor, hashQueryParams } from "./cursor";
+import { SortDirection, SortOrder } from "./db/multiple";
+import { InconsistentSortParams, MalformedRequest } from "./response";
 
 export const isBlank = (input: string | undefined | null): boolean =>
   input === undefined || input === null || input === "" || input.trim() === "";
@@ -16,10 +17,11 @@ const minPageSize = 1;
 const maxPageSize = 250;
 export const defaultPaginationLimit = 10;
 
-export const defaultSortOrder = "id";
+export const defaultSortOrder: SortOrder = "id";
+export const defaultSortDirection: SortDirection = "asc";
 
-export const isSortOrder = (order: string): order is SortOrder =>
-  order === "id" || order === "year";
+export const isSortOrder = (sort: string): sort is SortOrder =>
+  sort === "id" || sort === "year";
 
 export const validateLimit = async (rawLimit: string): Promise<number> => {
   if (isBlank(rawLimit)) return defaultPaginationLimit;
@@ -52,19 +54,37 @@ export const validateLimit = async (rawLimit: string): Promise<number> => {
   return limit;
 };
 
-export const validateSortOrder = (order: string): SortOrder => {
-  if (isBlank(order)) return "id";
+export const validateSortOrder = (sort: string): SortOrder => {
+  if (isBlank(sort)) return "id";
 
   // While `id` is a valid sort order, it's not exposed as part of the public
   // API. The `id` sort order is used when the user does not pass a sort order.
   // We don't allow users to pass it explicitly, because the default sort order
   // is technically unspecified.
-  if (order === "id" || !isSortOrder(order)) {
+  if (sort === "id" || !isSortOrder(sort)) {
     throw MalformedRequest({
-      detail: `This is not a valid sort order: '${order}'.`,
-      instance: `/artifacts/?sort=${order}`,
+      detail: `This is not a valid sort order: '${sort}'.`,
+      instance: `/artifacts/?sort=${sort}`,
     });
   }
 
-  return order;
+  return sort;
+};
+
+export const validateCursor = ({
+  cursor,
+  ...params
+}: {
+  cursor: Cursor;
+  sort: SortOrder;
+  direction: SortDirection;
+  identities?: string;
+  people?: string;
+  decades?: string;
+}) => {
+  const paramHash = hashQueryParams(params);
+
+  if (cursor.params !== paramHash) {
+    throw InconsistentSortParams(params);
+  }
 };

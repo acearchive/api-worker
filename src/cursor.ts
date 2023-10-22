@@ -1,6 +1,7 @@
 import { decrypt, encrypt } from "./crypto";
 import { InvalidCursor } from "./response";
-import { hash } from "object-hash";
+import hash from "object-hash";
+import { SortDirection, SortOrder } from "./db/multiple";
 
 type QueryParamHash = string;
 
@@ -24,11 +25,11 @@ export const hashQueryParams = ({
   people,
   decades,
 }: {
-  sort: string;
-  direction: string;
-  identities: string;
-  people: string;
-  decades: string;
+  sort: SortOrder;
+  direction: SortDirection;
+  identities?: string;
+  people?: string;
+  decades?: string;
 }): QueryParamHash =>
   // The order of the properties in this object is unimportant; they're sorted
   // for us before they're hashed. We truncate this hash to the first 32 bits to
