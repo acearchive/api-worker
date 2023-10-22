@@ -90,7 +90,7 @@ rootRouter.all("*", ({ url }) => {
 
 export default {
   fetch: (request: Request, env: Env) =>
-    router.handle(request, env).catch(async (err) => {
+    rootRouter.handle(request, env).catch(async (err) => {
       console.log(err.message);
 
       if (err instanceof ResponseError) {
