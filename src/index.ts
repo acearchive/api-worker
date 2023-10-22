@@ -14,6 +14,7 @@ import {
   defaultSortOrder,
   isBlank,
   validateLimit,
+  validateSortDirection,
   validateSortOrder,
 } from "./validation";
 
@@ -69,6 +70,7 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
     limit: rawLimit,
     cursor: rawCursor,
     sort: rawOrder,
+    direction: rawDirection,
     ...remaining
   } = query;
 
@@ -81,13 +83,14 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
 
   const limit = await validateLimit(rawLimit);
   const sort = validateSortOrder(rawOrder);
+  const direction = validateSortDirection(rawDirection);
 
   return await listArtifacts({
     encodedCursor: isBlank(rawCursor) ? undefined : rawCursor,
     cursorKey: env.CURSOR_ENCRYPTION_KEY,
     limit,
     sort: sort,
-    direction: defaultSortDirection,
+    direction,
     db: env.DB,
     method,
   });

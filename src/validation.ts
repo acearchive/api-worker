@@ -23,6 +23,10 @@ export const defaultSortDirection: SortDirection = "asc";
 export const isSortOrder = (sort: string): sort is SortOrder =>
   sort === "id" || sort === "year";
 
+export const isSortDirection = (
+  direction: string
+): direction is SortDirection => direction === "asc" || direction === "desc";
+
 export const validateLimit = async (rawLimit: string): Promise<number> => {
   if (isBlank(rawLimit)) return defaultPaginationLimit;
 
@@ -69,6 +73,19 @@ export const validateSortOrder = (sort: string): SortOrder => {
   }
 
   return sort;
+};
+
+export const validateSortDirection = (direction: string): SortDirection => {
+  if (isBlank(direction)) return "asc";
+
+  if (!isSortDirection(direction)) {
+    throw MalformedRequest({
+      detail: `This is not a valid sort direction: '${direction}'.`,
+      instance: `/artifacts/?direction=${direction}`,
+    });
+  }
+
+  return direction;
 };
 
 export const validateCursor = ({

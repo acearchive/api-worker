@@ -68,7 +68,13 @@ export const listArtifacts = async ({
     validateCursor({ cursor, sort, direction, identities, people, decades });
   }
 
-  const query = new GetArtifactListQuery({ db, cursor, sort, limit });
+  const query = new GetArtifactListQuery({
+    db,
+    cursor,
+    sort,
+    direction,
+    limit,
+  });
   const { artifacts: artifactRows, lastCursor } = await query.run();
 
   const artifacts = artifactRows.map(toApi);

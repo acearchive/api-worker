@@ -11,11 +11,7 @@ import {
   PeopleRow,
   rowsToMap,
 } from "./model";
-import {
-  CURSOR_PAGE_JOIN_SQL,
-  FIRST_PAGE_JOIN_SQL,
-  LATEST_ARTIFACT_JOIN_SQL,
-} from "./sql";
+import { cursorPageSql, firstPageSql, LATEST_ARTIFACT_JOIN_SQL } from "./sql";
 
 export type SortOrder = "id" | "year";
 
@@ -24,33 +20,39 @@ export type SortDirection = "asc" | "desc";
 export class GetArtifactListQuery {
   private readonly db: D1Database;
   private readonly cursor?: Cursor;
-  private readonly limit: number;
   private readonly sort: SortOrder;
+  private readonly direction: SortDirection;
+  private readonly limit: number;
 
   constructor({
     db,
     cursor,
     sort,
+    direction,
     limit,
   }: {
     db: D1Database;
     cursor: Cursor | undefined;
     sort: SortOrder;
+    direction: SortDirection;
     limit: number;
   }) {
     this.db = db;
     this.cursor = cursor;
     this.sort = sort;
+    this.direction = direction;
     this.limit = limit;
   }
 
   private bindVars = (stmt: D1PreparedStatement): D1PreparedStatement =>
     this.cursor === undefined
       ? stmt.bind(this.sort, this.limit)
-      : stmt.bind(this.cursor.id, this.sort, this.limit);
+      : stmt.bind(this.sort, this.limit, this.cursor.id);
 
-  private joinClause = (): string =>
-    this.cursor === undefined ? FIRST_PAGE_JOIN_SQL : CURSOR_PAGE_JOIN_SQL;
+  private pageSql = (): string =>
+    this.cursor === undefined
+      ? firstPageSql(this.direction)
+      : cursorPageSql(this.direction);
 
   private prepareLastCursorQuery = (): D1PreparedStatement =>
     this.db.prepare(
@@ -81,8 +83,7 @@ export class GetArtifactListQuery {
           artifacts
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
+        ${this.pageSql()}
         `
       )
     );
@@ -100,8 +101,7 @@ export class GetArtifactListQuery {
           artifacts ON artifacts.id = artifact_aliases.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
+        ${this.pageSql()}
         `
       )
     );
@@ -125,8 +125,7 @@ export class GetArtifactListQuery {
           artifacts ON artifacts.id = files.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
+        ${this.pageSql()}
         `
       )
     );
@@ -146,8 +145,7 @@ export class GetArtifactListQuery {
           artifacts ON artifacts.id = files.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
+        ${this.pageSql()}
         `
       )
     );
@@ -166,8 +164,7 @@ export class GetArtifactListQuery {
           artifacts ON artifacts.id = links.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
+        ${this.pageSql()}
         `
       )
     );
@@ -185,8 +182,7 @@ export class GetArtifactListQuery {
           artifacts ON artifacts.id = people.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
+        ${this.pageSql()}
         `
       )
     );
@@ -204,8 +200,7 @@ export class GetArtifactListQuery {
           artifacts ON artifacts.id = identities.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
+        ${this.pageSql()}
         `
       )
     );
@@ -223,8 +218,7 @@ export class GetArtifactListQuery {
           artifacts ON artifacts.id = decades.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
+        ${this.pageSql()}
         `
       )
     );
