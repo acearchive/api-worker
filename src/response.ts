@@ -1,6 +1,7 @@
 import { base16 } from "rfc4648";
 
 import { Problem } from "./api";
+import { SortDirection, SortOrder } from "./db/multiple";
 import { ContentType, Header, ResponseHeaders } from "./http";
 import { Method } from "./http";
 
@@ -142,19 +143,39 @@ export const UnrecognizedQueryParams = ({
   });
 };
 
-export const InconsistentSortParams = (
-  params: Record<string, string>
-): ResponseError =>
-  new ResponseError({
+export const InconsistentSortParams = ({
+  sort,
+  direction,
+  identities,
+  people,
+  decades,
+}: {
+  sort: SortOrder;
+  direction: SortDirection;
+  identities?: string;
+  people?: string;
+  decades?: string;
+}): ResponseError => {
+  const params = {
+    sort: sort === "id" ? undefined : sort,
+    direction,
+    identities,
+    people,
+    decades,
+  };
+
+  return new ResponseError({
     type: "/problems/inconsistent-sort-params",
     title: "Inconsistent Sort Parameters",
     status: 400,
     detail:
-      "The sort and filter parameters have changed since the previous page. These parameters need to be consistent between pages.",
+      "The sort/filter parameters have changed since the previous page. You can't change these parameters partway through paging.",
     instance: `/artifacts/?${Object.entries(params)
+      .filter(([, value]) => value !== undefined)
       .map(([key, value]) => `${key}=${value}`)
       .join("&")}`,
   });
+};
 
 export const InvalidCursor = (cursor: string): ResponseError =>
   new ResponseError({
