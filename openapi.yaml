@@ -71,7 +71,7 @@ paths:
             If you pass a cursor, then any sorting and filtering query params
             must stay the same as in the previous query. You can't change the
             sort order or filters partway through paging.
-          example: "Y89zOPPH-vJ36hizeSPlGJY-svrS_PuAIScz77HsZuuWQ8nYhgJzgsOZ0K-WmxoXAiChVZVirpCNZw=="
+          example: "TAqluQIRK8vJkL0DxZmhYa0XbvMJWdvRgeXpy1Vq2NK7Je6She3GgAPjVb5M12WAFhHI9rwcehm8JOExGjX7BWmKsj9S"
           schema:
             type: string
         - name: "limit"
@@ -98,6 +98,7 @@ paths:
 
             The default sort order is unspecified.
 
+            You can't modify sort and filter parameters in the middle of paging.
             Changing this value between pages returns a 400 error.
           example: "year"
           schema:
@@ -112,6 +113,7 @@ paths:
             You can only use this parameter if you specify a `sort`. The default
             is `asc`.
 
+            You can't modify sort and filter parameters in the middle of paging.
             Changing this value between pages returns a 400 error.
           example: "asc"
           default: "asc"
@@ -125,6 +127,10 @@ paths:
           description: |
             Only return artifacts with this value in `identities`.
 
+            Using filter parameters only returns artifacts that satisfy *all*
+            the filters (the intersection).
+
+            You can't modify sort and filter parameters in the middle of paging.
             Changing this value between pages returns a 400 error.
           example: "aromantic"
           schema:
@@ -134,6 +140,10 @@ paths:
           description: |
             Only return artifacts with this value in `people`.
 
+            Using filter parameters only returns artifacts that satisfy *all*
+            the filters (the intersection).
+
+            You can't modify sort and filter parameters in the middle of paging.
             Changing this value between pages returns a 400 error.
           example: "Lisa Orlando"
           schema:
@@ -143,6 +153,10 @@ paths:
           description: |
             Only return artifacts with this value in `decades`.
 
+            Using filter parameters only returns artifacts that satisfy *all*
+            the filters (the intersection).
+
+            You can't modify sort and filter parameters in the middle of paging.
             Changing this value between pages returns a 400 error.
           example: "1970"
           schema:
@@ -181,7 +195,7 @@ paths:
                       If there is a `next_cursor`, then there are more pages,
                       even if `items` is empty or smaller than the given
                       `limit`.
-                    example: "Y89zOPPH-vJ36hizeSPlGJY-svrS_PuAIScz77HsZuuWQ8nYhgJzgsOZ0K-WmxoXAiChVZVirpCNZw=="
+                    example: "TAqluQIRK8vJkL0DxZmhYa0XbvMJWdvRgeXpy1Vq2NK7Je6She3GgAPjVb5M12WAFhHI9rwcehm8JOExGjX7BWmKsj9S"
         "400":
           description: "Malformed Request"
           content:
