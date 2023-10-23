@@ -139,7 +139,9 @@ export const UnrecognizedQueryParams = ({
     title: "Unrecognized Query Parameter",
     status: 400,
     detail: `This is not a valid query parameter: '${badKey}'.`,
-    instance: `${endpoint}/?${badKey}=${badValue}`,
+    instance: `${endpoint}/?${encodeURIComponent(badKey)}=${encodeURIComponent(
+      badValue
+    )}`,
   });
 };
 
@@ -172,7 +174,10 @@ export const InconsistentSortParams = ({
       "The sort/filter parameters have changed since the previous page. You can't change these parameters partway through paging.",
     instance: `/artifacts/?${Object.entries(params)
       .filter(([, value]) => value !== undefined)
-      .map(([key, value]) => `${key}=${value}`)
+      .map(
+        ([key, value]) =>
+          `${encodeURIComponent(key)}=${encodeURIComponent(value ?? "")}`
+      )
       .join("&")}`,
   });
 };
@@ -184,7 +189,7 @@ export const InvalidCursor = (cursor: string): ResponseError =>
     status: 400,
     detail:
       "The 'cursor' parameter is not valid. This must be a cursor returned from a previous call to this endpoint.",
-    instance: `/artifacts/?cursor=${cursor}`,
+    instance: `/artifacts/?cursor=${encodeURIComponent(cursor)}`,
   });
 
 export const ArtifactNotFound = (artifactId: string): ResponseError =>
@@ -193,7 +198,7 @@ export const ArtifactNotFound = (artifactId: string): ResponseError =>
     title: "Artifact Not Found",
     status: 404,
     detail: `Artifact with ID '${artifactId}' not found.`,
-    instance: `/artifacts/${artifactId}`,
+    instance: `/artifacts/${encodeURIComponent(artifactId)}`,
   });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

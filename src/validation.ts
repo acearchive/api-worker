@@ -35,7 +35,7 @@ export const validateLimit = async (rawLimit: string): Promise<number> => {
   if (!castResult.valid) {
     throw MalformedRequest({
       detail: "The 'limit' parameter must be an integer.",
-      instance: `/artifacts/?limit=${rawLimit}`,
+      instance: `/artifacts/?limit=${encodeURIComponent(rawLimit)}`,
     });
   }
 
@@ -44,14 +44,14 @@ export const validateLimit = async (rawLimit: string): Promise<number> => {
   if (limit < minPageSize) {
     throw MalformedRequest({
       detail: `The 'limit' parameter must be >= ${minPageSize}.`,
-      instance: `/artifacts/?limit=${rawLimit}`,
+      instance: `/artifacts/?limit=${encodeURIComponent(rawLimit)}`,
     });
   }
 
   if (limit > maxPageSize) {
     throw MalformedRequest({
       detail: `The 'limit' parameter must be <= ${maxPageSize}.`,
-      instance: `/artifacts/?limit=${rawLimit}`,
+      instance: `/artifacts/?limit=${encodeURIComponent(rawLimit)}`,
     });
   }
 
@@ -68,7 +68,7 @@ export const validateSortOrder = (sort: string): SortOrder => {
   if (sort === "id" || !isSortOrder(sort)) {
     throw MalformedRequest({
       detail: `This is not a valid sort order: '${sort}'.`,
-      instance: `/artifacts/?sort=${sort}`,
+      instance: `/artifacts/?sort=${encodeURIComponent(sort)}`,
     });
   }
 
@@ -87,7 +87,7 @@ export const validateSortDirection = ({
   if (!isSortDirection(direction)) {
     throw MalformedRequest({
       detail: `This is not a valid sort direction: '${direction}'.`,
-      instance: `/artifacts/?direction=${direction}`,
+      instance: `/artifacts/?direction=${encodeURIComponent(direction)}`,
     });
   }
 
@@ -95,7 +95,7 @@ export const validateSortDirection = ({
     throw MalformedRequest({
       detail:
         "You cannot specify a 'direction' without specifying a 'sort' order.",
-      instance: `/artifacts/?direction=${direction}`,
+      instance: `/artifacts/?direction=${encodeURIComponent(direction)}`,
     });
   }
 
