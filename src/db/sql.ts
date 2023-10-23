@@ -37,18 +37,33 @@ export const pageOrderSql = (direction: SortDirection): string =>
 // A JOIN clause to get a page of artifacts using a cursor.
 export const cursorPageSql = (direction: SortDirection): string => `
   (
+    WITH ordered AS (
+      SELECT
+        artifact_versions.id AS id,
+        artifact_versions.artifact_id AS artifact_id,
+        row_number() OVER ( ORDER BY ${pageOrderSql(direction)} ) AS ord
+      FROM
+        artifact_versions
+      JOIN
+        artifacts ON artifacts.id = artifact_versions.artifact
+      JOIN
+        ${LATEST_ARTIFACT_SQL}
+    )
     SELECT
-      artifact_versions.id
+      ordered.id
     FROM
-      artifact_versions
-    JOIN
-      artifacts ON artifacts.id = artifact_versions.artifact
-    JOIN
-      ${LATEST_ARTIFACT_SQL}
+      ordered
     WHERE
-      artifact_versions.artifact_id > ?3
+      ordered.ord > (
+        SELECT
+          ordered.ord
+        FROM
+          ordered
+        WHERE
+          ordered.artifact_id = ?3
+      )
     ORDER BY
-      ${pageOrderSql(direction)}
+      ordered.ord
     LIMIT
       ?2
   ) AS page
