@@ -83,7 +83,7 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
 
   const limit = await validateLimit(rawLimit);
   const sort = validateSortOrder(rawOrder);
-  const direction = validateSortDirection(rawDirection);
+  const direction = validateSortDirection({ sort, direction: rawDirection });
 
   return await listArtifacts({
     encodedCursor: isBlank(rawCursor) ? undefined : rawCursor,

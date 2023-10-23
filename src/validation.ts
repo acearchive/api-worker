@@ -75,12 +75,26 @@ export const validateSortOrder = (sort: string): SortOrder => {
   return sort;
 };
 
-export const validateSortDirection = (direction: string): SortDirection => {
+export const validateSortDirection = ({
+  sort,
+  direction,
+}: {
+  sort: SortOrder;
+  direction: string;
+}): SortDirection => {
   if (isBlank(direction)) return "asc";
 
   if (!isSortDirection(direction)) {
     throw MalformedRequest({
       detail: `This is not a valid sort direction: '${direction}'.`,
+      instance: `/artifacts/?direction=${direction}`,
+    });
+  }
+
+  if (sort === "id") {
+    throw MalformedRequest({
+      detail:
+        "You cannot specify a 'direction' without specifying a 'sort' order.",
       instance: `/artifacts/?direction=${direction}`,
     });
   }
