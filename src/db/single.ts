@@ -9,7 +9,7 @@ import {
   LinksRow,
   PeopleRow,
 } from "./model";
-import { LATEST_ARTIFACT_JOIN_SQL } from "./sql";
+import { LATEST_ARTIFACT_SQL } from "./sql";
 
 export class GetArtifactQuery {
   private readonly db: D1Database;
@@ -37,7 +37,7 @@ export class GetArtifactQuery {
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          ${LATEST_ARTIFACT_SQL}
         WHERE
           artifact_versions.artifact_id = ?1
         LIMIT
@@ -60,7 +60,7 @@ export class GetArtifactQuery {
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          ${LATEST_ARTIFACT_SQL}
         WHERE
           artifact_versions.artifact_id = ?1
         `
@@ -88,7 +88,7 @@ export class GetArtifactQuery {
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          ${LATEST_ARTIFACT_SQL}
         WHERE
           artifact_versions.artifact_id = ?1
         `
@@ -112,7 +112,7 @@ export class GetArtifactQuery {
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          ${LATEST_ARTIFACT_SQL}
         WHERE
           artifact_versions.artifact_id = ?1
         `
@@ -134,7 +134,7 @@ export class GetArtifactQuery {
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          ${LATEST_ARTIFACT_SQL}
         WHERE
           artifact_versions.artifact_id = ?1
         `
@@ -155,7 +155,7 @@ export class GetArtifactQuery {
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          ${LATEST_ARTIFACT_SQL}
         WHERE
           artifact_versions.artifact_id = ?1
         `
@@ -176,7 +176,7 @@ export class GetArtifactQuery {
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          ${LATEST_ARTIFACT_SQL}
         WHERE
           artifact_versions.artifact_id = ?1
         `
@@ -197,7 +197,7 @@ export class GetArtifactQuery {
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          ${LATEST_ARTIFACT_SQL}
         WHERE
           artifact_versions.artifact_id = ?1
         `

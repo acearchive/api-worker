@@ -7,7 +7,7 @@
 import { SortDirection } from "./multiple";
 
 // A JOIN clause to get only the latest version of each artifact.
-export const LATEST_ARTIFACT_JOIN_SQL = `
+export const LATEST_ARTIFACT_SQL = `
   (
     SELECT
       artifact_id,
@@ -21,31 +21,50 @@ export const LATEST_ARTIFACT_JOIN_SQL = `
   AND latest_artifacts.version = artifact_versions.version
 ` as const;
 
-const PAGE_ORDER_SQL = `
+// And ORDER BY clause to sort artifacts.
+export const PAGE_ORDER_SQL = `
   CASE ?1
     WHEN 'id' THEN artifact_versions.artifact_id
     WHEN 'year' THEN artifacts.from_year
   END
 ` as const;
 
-// Get a page of artifacts using a cursor.
+// A JOIN clause to get a page of artifacts using a cursor.
 export const cursorPageSql = (direction: SortDirection): string => `
-  JOIN
-    ${LATEST_ARTIFACT_JOIN_SQL}
-  WHERE
-    artifact_versions.artifact_id > ?3
-  ORDER BY
-    ${PAGE_ORDER_SQL} ${direction === "asc" ? "ASC" : "DESC"}
-  LIMIT
-    ?2
+  (
+    SELECT
+      artifact_versions.id
+    FROM
+      artifact_versions
+    JOIN
+      artifacts ON artifacts.id = artifact_versions.artifact
+    JOIN
+      ${LATEST_ARTIFACT_SQL}
+    WHERE
+      artifact_versions.artifact_id > ?3
+    ORDER BY
+      ${PAGE_ORDER_SQL} ${direction === "asc" ? "ASC" : "DESC"}
+    LIMIT
+      ?2
+  ) AS page
+  ON page.id = artifact_versions.id
 `;
 
-// Get the first page of artifacts.
+// A JOIN clause to get the first page of artifacts.
 export const firstPageSql = (direction: SortDirection): string => `
-  JOIN
-    ${LATEST_ARTIFACT_JOIN_SQL}
-  ORDER BY
-    ${PAGE_ORDER_SQL} ${direction === "asc" ? "ASC" : "DESC"}
-  LIMIT
-    ?2
+  (
+    SELECT
+      artifact_versions.id
+    FROM
+      artifact_versions
+    JOIN
+      artifacts ON artifacts.id = artifact_versions.artifact
+    JOIN
+      ${LATEST_ARTIFACT_SQL}
+    ORDER BY
+      ${PAGE_ORDER_SQL} ${direction === "asc" ? "ASC" : "DESC"}
+    LIMIT
+      ?2
+  ) AS page
+  ON page.id = artifact_versions.id
 `;
