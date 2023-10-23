@@ -15,6 +15,7 @@ import {
   cursorPageSql,
   firstPageSql,
   LATEST_ARTIFACT_SQL,
+  pageOrderSql,
   PAGE_ORDER_SQL,
 } from "./sql";
 
@@ -91,7 +92,7 @@ export class GetArtifactListQuery {
         JOIN
           ${this.pageSql()}
         ORDER BY
-          ${PAGE_ORDER_SQL} ${this.direction === "asc" ? "ASC" : "DESC"}
+          ${pageOrderSql(this.direction)}
         `
       )
     );

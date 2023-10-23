@@ -19,15 +19,20 @@ export const LATEST_ARTIFACT_SQL = `
   ) AS latest_artifacts
   ON latest_artifacts.artifact_id = artifact_versions.artifact_id
   AND latest_artifacts.version = artifact_versions.version
-` as const;
+`;
 
 // And ORDER BY clause to sort artifacts.
-export const PAGE_ORDER_SQL = `
+//
+// We sort by the desired sort criteria first, and then use the artifact ID to
+// break ties. This ensures that the sort order is deterministic.
+export const pageOrderSql = (direction: SortDirection): string =>
+  `
   CASE ?1
     WHEN 'id' THEN artifact_versions.artifact_id
     WHEN 'year' THEN artifacts.from_year
-  END
-` as const;
+  END ${direction === "asc" ? "ASC" : "DESC"},
+  artifact_versions.artifact_id ASC
+`;
 
 // A JOIN clause to get a page of artifacts using a cursor.
 export const cursorPageSql = (direction: SortDirection): string => `
@@ -43,7 +48,7 @@ export const cursorPageSql = (direction: SortDirection): string => `
     WHERE
       artifact_versions.artifact_id > ?3
     ORDER BY
-      ${PAGE_ORDER_SQL} ${direction === "asc" ? "ASC" : "DESC"}
+      ${pageOrderSql(direction)}
     LIMIT
       ?2
   ) AS page
@@ -62,7 +67,7 @@ export const firstPageSql = (direction: SortDirection): string => `
     JOIN
       ${LATEST_ARTIFACT_SQL}
     ORDER BY
-      ${PAGE_ORDER_SQL} ${direction === "asc" ? "ASC" : "DESC"}
+      ${pageOrderSql(direction)}
     LIMIT
       ?2
   ) AS page
