@@ -9,7 +9,6 @@ import {
   LinksRow,
   PeopleRow,
 } from "./model";
-import { LATEST_ARTIFACT_JOIN_SQL } from "./sql";
 
 export class GetArtifactQuery {
   private readonly db: D1Database;
@@ -25,7 +24,7 @@ export class GetArtifactQuery {
       .prepare(
         `
         SELECT
-          artifact_versions.artifact_id,
+          latest_artifacts.artifact_id,
           artifacts.slug,
           artifacts.title,
           artifacts.summary,
@@ -35,11 +34,9 @@ export class GetArtifactQuery {
         FROM
           artifacts
         JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          latest_artifacts ON latest_artifacts.artifact = artifacts.id
         WHERE
-          artifact_versions.artifact_id = ?1
+          latest_artifacts.artifact_id = ?1
         LIMIT
           1
         `
@@ -56,13 +53,9 @@ export class GetArtifactQuery {
         FROM
           artifact_aliases
         JOIN
-          artifacts ON artifacts.id = artifact_aliases.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          latest_artifacts ON latest_artifacts.artifact = artifact_aliases.artifact
         WHERE
-          artifact_versions.artifact_id = ?1
+          latest_artifacts.artifact_id = ?1
         `
       )
       .bind(this.artifactId);
@@ -84,13 +77,9 @@ export class GetArtifactQuery {
         FROM
           files
         JOIN
-          artifacts ON artifacts.id = files.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          latest_artifacts ON latest_artifacts.artifact = files.artifact
         WHERE
-          artifact_versions.artifact_id = ?1
+          latest_artifacts.artifact_id = ?1
         `
       )
       .bind(this.artifactId);
@@ -108,13 +97,9 @@ export class GetArtifactQuery {
         JOIN
           files ON files.id = file_aliases.file
         JOIN
-          artifacts ON artifacts.id = files.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          latest_artifacts ON latest_artifacts.artifact = files.artifact
         WHERE
-          artifact_versions.artifact_id = ?1
+          latest_artifacts.artifact_id = ?1
         `
       )
       .bind(this.artifactId);
@@ -130,13 +115,9 @@ export class GetArtifactQuery {
         FROM
           links
         JOIN
-          artifacts ON artifacts.id = links.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          latest_artifacts ON latest_artifacts.artifact = links.artifact
         WHERE
-          artifact_versions.artifact_id = ?1
+          latest_artifacts.artifact_id = ?1
         `
       )
       .bind(this.artifactId);
@@ -151,14 +132,10 @@ export class GetArtifactQuery {
         FROM
           tags
         JOIN
-          artifacts ON artifacts.id = tags.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          latest_artifacts ON latest_artifacts.artifact = tags.artifact
         WHERE
           tags.key = 'person'
-          AND artifact_versions.artifact_id = ?1
+          AND latest_artifacts.artifact_id = ?1
         `
       )
       .bind(this.artifactId);
@@ -173,14 +150,10 @@ export class GetArtifactQuery {
         FROM
           tags
         JOIN
-          artifacts ON artifacts.id = tags.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          latest_artifacts ON latest_artifacts.artifact = tags.artifact
         WHERE
           tags.key = 'identity'
-          AND artifact_versions.artifact_id = ?1
+          AND latest_artifacts.artifact_id = ?1
         `
       )
       .bind(this.artifactId);
@@ -195,14 +168,10 @@ export class GetArtifactQuery {
         FROM
           tags
         JOIN
-          artifacts ON artifacts.id = tags.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+          latest_artifacts ON latest_artifacts.artifact = tags.artifact
         WHERE
           tags.key = 'decade'
-          AND artifact_versions.artifact_id = ?1
+          AND latest_artifacts.artifact_id = ?1
         `
       )
       .bind(this.artifactId);

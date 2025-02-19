@@ -11,11 +11,6 @@ import {
   PeopleRow,
   rowsToMap,
 } from "./model";
-import {
-  CURSOR_PAGE_JOIN_SQL,
-  FIRST_PAGE_JOIN_SQL,
-  LATEST_ARTIFACT_JOIN_SQL,
-} from "./sql";
 
 export class GetArtifactListQuery {
   private readonly db: D1Database;
@@ -34,195 +29,179 @@ export class GetArtifactListQuery {
     this.limit = limit;
   }
 
-  private bindVars = (stmt: D1PreparedStatement): D1PreparedStatement =>
-    this.cursor === undefined
-      ? stmt.bind(this.limit)
-      : stmt.bind(this.cursor.id, this.limit);
+  private prepareFirstPageTempView = (): D1PreparedStatement =>
+    this.db
+      .prepare(
+        `
+        CREATE TEMP VIEW artifacts_page (artifact, artifact_id, created_at) AS
+        SELECT
+          artifact,
+          artifact_id,
+          created_at
+        FROM
+          latest_artifacts
+        ORDER BY
+          artifact_id
+        LIMIT
+          ?1
+        `
+      )
+      .bind(this.limit);
 
-  private joinClause = (): string =>
-    this.cursor === undefined ? FIRST_PAGE_JOIN_SQL : CURSOR_PAGE_JOIN_SQL;
+  private prepareNextPageTempView = (): D1PreparedStatement =>
+    this.db
+      .prepare(
+        `
+        CREATE TEMP VIEW artifacts_page (artifact, artifact_id, created_at) AS
+        SELECT
+          artifact,
+          artifact_id,
+          created_at
+        FROM
+          latest_artifacts
+        WHERE
+          artifact_id > ?1
+        ORDER BY
+          artifact_id
+        LIMIT
+          ?2
+        `
+      )
+      .bind(this.cursor?.id, this.limit);
 
   private prepareLastCursorQuery = (): D1PreparedStatement =>
     this.db.prepare(
       `
       SELECT
-        MAX(artifact_versions.artifact_id) AS last_cursor
+        MAX(artifact_id) AS last_cursor
       FROM
-        artifact_versions
-      JOIN
-          ${LATEST_ARTIFACT_JOIN_SQL}
+        artifacts_page
       `
     );
 
   private prepareArtifactsQuery = (): D1PreparedStatement =>
-    this.bindVars(
-      this.db.prepare(
-        `
-        SELECT
-          artifacts.id,
-          artifact_versions.artifact_id,
-          artifacts.slug,
-          artifacts.title,
-          artifacts.summary,
-          artifacts.description,
-          artifacts.from_year,
-          artifacts.to_year
-        FROM
-          artifacts
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
-        `
-      )
+    this.db.prepare(
+      `
+      SELECT
+        artifacts.id,
+        artifacts_page.artifact_id,
+        artifacts.slug,
+        artifacts.title,
+        artifacts.summary,
+        artifacts.description,
+        artifacts.from_year,
+        artifacts.to_year
+      FROM
+        artifacts
+      JOIN
+        artifacts_page ON artifacts_page.artifact = artifacts.id
+      `
     );
 
   private prepareArtifactAliasesQuery = (): D1PreparedStatement =>
-    this.bindVars(
-      this.db.prepare(
-        `
-        SELECT
-          artifact_aliases.artifact,
-          artifact_aliases.slug
-        FROM
-          artifact_aliases
-        JOIN
-          artifacts ON artifacts.id = artifact_aliases.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
-        `
-      )
+    this.db.prepare(
+      `
+      SELECT
+        artifact_aliases.artifact,
+        artifact_aliases.slug
+      FROM
+        artifact_aliases
+      JOIN
+        artifacts_page ON artifacts_page.artifact = artifact_aliases.artifact
+      `
     );
 
   private prepareFilesQuery = (): D1PreparedStatement =>
-    this.bindVars(
-      this.db.prepare(
-        `
-        SELECT
-          files.id,
-          files.artifact,
-          files.filename,
-          files.name,
-          files.media_type,
-          files.multihash,
-          files.lang,
-          files.hidden
-        FROM
-          files
-        JOIN
-          artifacts ON artifacts.id = files.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
-        `
-      )
+    this.db.prepare(
+      `
+      SELECT
+        files.id,
+        files.artifact,
+        files.filename,
+        files.name,
+        files.media_type,
+        files.multihash,
+        files.lang,
+        files.hidden
+      FROM
+        files
+      JOIN
+        artifacts_page ON artifacts_page.artifact = files.artifact
+      `
     );
 
   private prepareFileAliasesQuery = (): D1PreparedStatement =>
-    this.bindVars(
-      this.db.prepare(
-        `
-        SELECT
-          file_aliases.file,
-          file_aliases.filename
-        FROM
-          file_aliases
-        JOIN
-          files ON files.id = file_aliases.file
-        JOIN
-          artifacts ON artifacts.id = files.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
-        `
-      )
+    this.db.prepare(
+      `
+      SELECT
+        file_aliases.file,
+        file_aliases.filename
+      FROM
+        file_aliases
+      JOIN
+        files ON files.id = file_aliases.file
+      JOIN
+        artifacts_page ON artifacts_page.artifact = files.artifact
+      `
     );
 
   private prepareLinksQuery = (): D1PreparedStatement =>
-    this.bindVars(
-      this.db.prepare(
-        `
-        SELECT
-          links.artifact,
-          links.name,
-          links.url
-        FROM
-          links
-        JOIN
-          artifacts ON artifacts.id = links.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
-        `
-      )
+    this.db.prepare(
+      `
+      SELECT
+        links.artifact,
+        links.name,
+        links.url
+      FROM
+        links
+      JOIN
+        artifacts_page ON artifacts_page.artifact = links.artifact
+      `
     );
 
   private preparePeopleQuery = (): D1PreparedStatement =>
-    this.bindVars(
-      this.db.prepare(
-        `
-        SELECT
-          tags.artifact,
-          tags.value
-        FROM
-          tags
-        JOIN
-          artifacts ON artifacts.id = tags.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
-        WHERE
-          tags.key = 'person'
-        `
-      )
+    this.db.prepare(
+      `
+      SELECT
+        tags.artifact,
+        tags.value
+      FROM
+        tags
+      JOIN
+        artifacts_page ON artifacts_page.artifact = tags.artifact
+      WHERE
+        tags.key = 'person'
+      `
     );
 
   private prepareIdentitiesQuery = (): D1PreparedStatement =>
-    this.bindVars(
-      this.db.prepare(
-        `
-        SELECT
-          tags.artifact,
-          tags.value
-        FROM
-          tags
-        JOIN
-          artifacts ON artifacts.id = tags.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
-        WHERE
-          tags.key = 'identity'
-        `
-      )
+    this.db.prepare(
+      `
+      SELECT
+        tags.artifact,
+        tags.value
+      FROM
+        tags
+      JOIN
+        artifacts_page ON artifacts_page.artifact = tags.artifact
+      WHERE
+        tags.key = 'identity'
+      `
     );
 
   private prepareDecadesQuery = (): D1PreparedStatement =>
-    this.bindVars(
-      this.db.prepare(
-        `
-        SELECT
-          tags.artifact,
-          tags.value
-        FROM
-          tags
-        JOIN
-          artifacts ON artifacts.id = tags.artifact
-        JOIN
-          artifact_versions ON artifact_versions.artifact = artifacts.id
-        JOIN
-          ${this.joinClause()}
-        WHERE
-          tags.key = 'decade'
-        `
-      )
+    this.db.prepare(
+      `
+      SELECT
+        tags.artifact,
+        tags.value
+      FROM
+        tags
+      JOIN
+        artifacts_page ON artifacts_page.artifact = tags.artifact
+      WHERE
+        tags.key = 'decade'
+      `
     );
 
   run = async (): Promise<{
@@ -233,6 +212,9 @@ export class GetArtifactListQuery {
     // same shape.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = await this.db.batch<any>([
+      this.cursor === undefined
+        ? this.prepareFirstPageTempView()
+        : this.prepareNextPageTempView(),
       this.prepareArtifactsQuery(),
       this.prepareArtifactAliasesQuery(),
       this.prepareFilesQuery(),
