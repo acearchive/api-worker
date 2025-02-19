@@ -23,7 +23,7 @@ export const LATEST_ARTIFACT_JOIN_SQL = `
 export const CURSOR_PAGE_JOIN_SQL = `
   (
     SELECT
-      artifact_versions.artifact_id
+      artifact_versions.id
     FROM
       artifact_versions
     JOIN
@@ -35,14 +35,14 @@ export const CURSOR_PAGE_JOIN_SQL = `
     LIMIT
       ?2
   ) AS artifacts_page
-  ON artifacts_page.artifact_id = artifact_versions.artifact_id
+  ON artifacts_page.id = artifact_versions.id
 ` as const;
 
 // A JOIN clause to get the first page of artifacts.
 export const FIRST_PAGE_JOIN_SQL = `
   (
     SELECT
-      artifact_versions.artifact_id
+      artifact_versions.id
     FROM
       artifact_versions
     JOIN
@@ -52,5 +52,5 @@ export const FIRST_PAGE_JOIN_SQL = `
     LIMIT
       ?1
   ) AS artifacts_page
-  ON artifacts_page.artifact_id = artifact_versions.artifact_id
+  ON artifacts_page.id = artifact_versions.id
 ` as const;
