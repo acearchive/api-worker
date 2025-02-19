@@ -167,16 +167,18 @@ export class GetArtifactListQuery {
       this.db.prepare(
         `
         SELECT
-          people.artifact,
-          people.name
+          tags.artifact,
+          tags.value
         FROM
-          people
+          tags
         JOIN
-          artifacts ON artifacts.id = people.artifact
+          artifacts ON artifacts.id = tags.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
           ${this.joinClause()}
+        WHERE
+          tags.key = 'person'
         `
       )
     );
@@ -186,16 +188,18 @@ export class GetArtifactListQuery {
       this.db.prepare(
         `
         SELECT
-          identities.artifact,
-          identities.name
+          tags.artifact,
+          tags.value
         FROM
-          identities
+          tags
         JOIN
-          artifacts ON artifacts.id = identities.artifact
+          artifacts ON artifacts.id = tags.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
           ${this.joinClause()}
+        WHERE
+          tags.key = 'identity'
         `
       )
     );
@@ -205,16 +209,18 @@ export class GetArtifactListQuery {
       this.db.prepare(
         `
         SELECT
-          decades.artifact,
-          decades.decade
+          tags.artifact,
+          tags.value
         FROM
-          decades
+          tags
         JOIN
-          artifacts ON artifacts.id = decades.artifact
+          artifacts ON artifacts.id = tags.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
           ${this.joinClause()}
+        WHERE
+          tags.key = 'decade'
         `
       )
     );

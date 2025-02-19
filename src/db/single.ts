@@ -147,17 +147,18 @@ export class GetArtifactQuery {
       .prepare(
         `
         SELECT
-          people.name
+          tags.value
         FROM
-          people
+          tags
         JOIN
-          artifacts ON artifacts.id = people.artifact
+          artifacts ON artifacts.id = tags.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
           ${LATEST_ARTIFACT_JOIN_SQL}
         WHERE
-          artifact_versions.artifact_id = ?1
+          tags.key = 'person'
+          AND artifact_versions.artifact_id = ?1
         `
       )
       .bind(this.artifactId);
@@ -168,17 +169,18 @@ export class GetArtifactQuery {
       .prepare(
         `
         SELECT
-          identities.name
+          tags.value
         FROM
-          identities
+          tags
         JOIN
-          artifacts ON artifacts.id = identities.artifact
+          artifacts ON artifacts.id = tags.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
           ${LATEST_ARTIFACT_JOIN_SQL}
         WHERE
-          artifact_versions.artifact_id = ?1
+          tags.key = 'identity'
+          AND artifact_versions.artifact_id = ?1
         `
       )
       .bind(this.artifactId);
@@ -189,17 +191,18 @@ export class GetArtifactQuery {
       .prepare(
         `
         SELECT
-          decades.decade
+          tags.value
         FROM
-          decades
+          tags
         JOIN
-          artifacts ON artifacts.id = decades.artifact
+          artifacts ON artifacts.id = tags.artifact
         JOIN
           artifact_versions ON artifact_versions.artifact = artifacts.id
         JOIN
           ${LATEST_ARTIFACT_JOIN_SQL}
         WHERE
-          artifact_versions.artifact_id = ?1
+          tags.key = 'decade'
+          AND artifact_versions.artifact_id = ?1
         `
       )
       .bind(this.artifactId);

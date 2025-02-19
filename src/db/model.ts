@@ -44,17 +44,17 @@ export type LinksRow = Readonly<{
 
 export type PeopleRow = Readonly<{
   artifact: ArtifactKey;
-  name: string;
+  value: string;
 }>;
 
 export type IdentitiesRow = Readonly<{
   artifact: ArtifactKey;
-  name: string;
+  value: string;
 }>;
 
 export type DecadesRow = Readonly<{
   artifact: ArtifactKey;
-  decade: number;
+  value: number;
 }>;
 
 export type Artifact = ArtifactsRow & {
@@ -109,9 +109,9 @@ export const toApi = (artifact: Artifact): ApiArtifact => ({
     name: link.name,
     url: link.url,
   })),
-  people: artifact.people.map((person) => person.name),
-  identities: artifact.identities.map((identity) => identity.name),
+  people: artifact.people.map((person) => person.value),
+  identities: artifact.identities.map((identity) => identity.value),
   from_year: artifact.from_year,
   to_year: artifact.to_year ?? undefined,
-  decades: artifact.decades.map((decade) => decade.decade),
+  decades: artifact.decades.map((decade) => decade.value),
 });
