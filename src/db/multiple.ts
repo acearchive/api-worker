@@ -29,11 +29,11 @@ export class GetArtifactListQuery {
     this.limit = limit;
   }
 
-  private prepareFirstPageTempView = (): D1PreparedStatement =>
+  private prepareFirstPageTempTable = (): D1PreparedStatement =>
     this.db
       .prepare(
         `
-        CREATE TEMP VIEW artifacts_page (artifact, artifact_id, created_at) AS
+        CREATE TEMP TABLE artifacts_page AS
         SELECT
           artifact,
           artifact_id,
@@ -48,11 +48,11 @@ export class GetArtifactListQuery {
       )
       .bind(this.limit);
 
-  private prepareNextPageTempView = (): D1PreparedStatement =>
+  private prepareNextPageTempTable = (): D1PreparedStatement =>
     this.db
       .prepare(
         `
-        CREATE TEMP VIEW artifacts_page (artifact, artifact_id, created_at) AS
+        CREATE TEMP TABLE artifacts_page AS
         SELECT
           artifact,
           artifact_id,
@@ -213,8 +213,8 @@ export class GetArtifactListQuery {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = await this.db.batch<any>([
       this.cursor === undefined
-        ? this.prepareFirstPageTempView()
-        : this.prepareNextPageTempView(),
+        ? this.prepareFirstPageTempTable()
+        : this.prepareNextPageTempTable(),
       this.prepareArtifactsQuery(),
       this.prepareArtifactAliasesQuery(),
       this.prepareFilesQuery(),
