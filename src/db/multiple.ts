@@ -29,180 +29,253 @@ export class GetArtifactListQuery {
     this.limit = limit;
   }
 
-  private prepareFirstPageTempTable = (): D1PreparedStatement =>
-    this.db
-      .prepare(
-        `
-        CREATE TEMP TABLE artifacts_page AS
-        SELECT
-          artifact,
-          artifact_id,
-          created_at
-        FROM
-          latest_artifacts
-        ORDER BY
-          artifact_id
-        LIMIT
-          ?1
-        `
-      )
-      .bind(this.limit);
-
-  private prepareNextPageTempTable = (): D1PreparedStatement =>
-    this.db
-      .prepare(
-        `
-        CREATE TEMP TABLE artifacts_page AS
-        SELECT
-          artifact,
-          artifact_id,
-          created_at
-        FROM
-          latest_artifacts
-        WHERE
-          artifact_id > ?1
-        ORDER BY
-          artifact_id
-        LIMIT
-          ?2
-        `
-      )
-      .bind(this.cursor?.id, this.limit);
-
   private prepareLastCursorQuery = (): D1PreparedStatement =>
     this.db.prepare(
       `
       SELECT
         MAX(artifact_id) AS last_cursor
       FROM
-        artifacts_page
+        latest_artifacts
       `
     );
 
   private prepareArtifactsQuery = (): D1PreparedStatement =>
-    this.db.prepare(
-      `
-      SELECT
-        artifacts.id,
-        artifacts_page.artifact_id,
-        artifacts.slug,
-        artifacts.title,
-        artifacts.summary,
-        artifacts.description,
-        artifacts.from_year,
-        artifacts.to_year
-      FROM
-        artifacts
-      JOIN
-        artifacts_page ON artifacts_page.artifact = artifacts.id
-      `
-    );
+    this.db
+      .prepare(
+        `
+        WITH artifacts_page AS (
+          SELECT
+            artifact,
+            artifact_id
+          FROM
+            latest_artifacts
+          WHERE
+            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
+          ORDER BY
+            artifact_id
+          LIMIT
+            ?2
+        )
+        SELECT
+          artifacts.id,
+          artifacts_page.artifact_id,
+          artifacts.slug,
+          artifacts.title,
+          artifacts.summary,
+          artifacts.description,
+          artifacts.from_year,
+          artifacts.to_year
+        FROM
+          artifacts
+        JOIN
+          artifacts_page ON artifacts_page.artifact = artifacts.id
+        `
+      )
+      .bind(this.cursor?.id ?? null, this.limit);
 
   private prepareArtifactAliasesQuery = (): D1PreparedStatement =>
-    this.db.prepare(
-      `
-      SELECT
-        artifact_aliases.artifact,
-        artifact_aliases.slug
-      FROM
-        artifact_aliases
-      JOIN
-        artifacts_page ON artifacts_page.artifact = artifact_aliases.artifact
-      `
-    );
+    this.db
+      .prepare(
+        `
+        WITH artifacts_page AS (
+          SELECT
+            artifact
+          FROM
+            latest_artifacts
+          WHERE
+            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
+          ORDER BY
+            artifact_id
+          LIMIT
+            ?2
+        )
+        SELECT
+          artifact_aliases.artifact,
+          artifact_aliases.slug
+        FROM
+          artifact_aliases
+        JOIN
+          artifacts_page ON artifacts_page.artifact = artifact_aliases.artifact
+        `
+      )
+      .bind(this.cursor?.id ?? null, this.limit);
 
   private prepareFilesQuery = (): D1PreparedStatement =>
-    this.db.prepare(
-      `
-      SELECT
-        files.id,
-        files.artifact,
-        files.filename,
-        files.name,
-        files.media_type,
-        files.multihash,
-        files.lang,
-        files.hidden
-      FROM
-        files
-      JOIN
-        artifacts_page ON artifacts_page.artifact = files.artifact
-      `
-    );
+    this.db
+      .prepare(
+        `
+        WITH artifacts_page AS (
+          SELECT
+            artifact
+          FROM
+            latest_artifacts
+          WHERE
+            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
+          ORDER BY
+            artifact_id
+          LIMIT
+            ?2
+        )
+        SELECT
+          files.id,
+          files.artifact,
+          files.filename,
+          files.name,
+          files.media_type,
+          files.multihash,
+          files.lang,
+          files.hidden
+        FROM
+          files
+        JOIN
+          artifacts_page ON artifacts_page.artifact = files.artifact
+        `
+      )
+      .bind(this.cursor?.id ?? null, this.limit);
 
   private prepareFileAliasesQuery = (): D1PreparedStatement =>
-    this.db.prepare(
-      `
-      SELECT
-        file_aliases.file,
-        file_aliases.filename
-      FROM
-        file_aliases
-      JOIN
-        files ON files.id = file_aliases.file
-      JOIN
-        artifacts_page ON artifacts_page.artifact = files.artifact
-      `
-    );
+    this.db
+      .prepare(
+        `
+        WITH artifacts_page AS (
+          SELECT
+            artifact
+          FROM
+            latest_artifacts
+          WHERE
+            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
+          ORDER BY
+            artifact_id
+          LIMIT
+            ?2
+        )
+        SELECT
+          file_aliases.file,
+          file_aliases.filename
+        FROM
+          file_aliases
+        JOIN
+          files ON files.id = file_aliases.file
+        JOIN
+          artifacts_page ON artifacts_page.artifact = files.artifact
+        `
+      )
+      .bind(this.cursor?.id ?? null, this.limit);
 
   private prepareLinksQuery = (): D1PreparedStatement =>
-    this.db.prepare(
-      `
-      SELECT
-        links.artifact,
-        links.name,
-        links.url
-      FROM
-        links
-      JOIN
-        artifacts_page ON artifacts_page.artifact = links.artifact
-      `
-    );
+    this.db
+      .prepare(
+        `
+        WITH artifacts_page AS (
+          SELECT
+            artifact
+          FROM
+            latest_artifacts
+          WHERE
+            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
+          ORDER BY
+            artifact_id
+          LIMIT
+            ?2
+        )
+        SELECT
+          links.artifact,
+          links.name,
+          links.url
+        FROM
+          links
+        JOIN
+          artifacts_page ON artifacts_page.artifact = links.artifact
+        `
+      )
+      .bind(this.cursor?.id ?? null, this.limit);
 
   private preparePeopleQuery = (): D1PreparedStatement =>
-    this.db.prepare(
-      `
-      SELECT
-        tags.artifact,
-        tags.value
-      FROM
-        tags
-      JOIN
-        artifacts_page ON artifacts_page.artifact = tags.artifact
-      WHERE
-        tags.key = 'person'
-      `
-    );
+    this.db
+      .prepare(
+        `
+        WITH artifacts_page AS (
+          SELECT
+            artifact
+          FROM
+            latest_artifacts
+          WHERE
+            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
+          ORDER BY
+            artifact_id
+          LIMIT
+            ?2
+        )
+        SELECT
+          tags.artifact,
+          tags.value
+        FROM
+          tags
+        JOIN
+          artifacts_page ON artifacts_page.artifact = tags.artifact
+        WHERE
+          tags.key = 'person'
+        `
+      )
+      .bind(this.cursor?.id ?? null, this.limit);
 
   private prepareIdentitiesQuery = (): D1PreparedStatement =>
-    this.db.prepare(
-      `
-      SELECT
-        tags.artifact,
-        tags.value
-      FROM
-        tags
-      JOIN
-        artifacts_page ON artifacts_page.artifact = tags.artifact
-      WHERE
-        tags.key = 'identity'
-      `
-    );
+    this.db
+      .prepare(
+        `
+        WITH artifacts_page AS (
+          SELECT
+            artifact
+          FROM
+            latest_artifacts
+          WHERE
+            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
+          ORDER BY
+            artifact_id
+          LIMIT
+            ?2
+        )
+        SELECT
+          tags.artifact,
+          tags.value
+        FROM
+          tags
+        JOIN
+          artifacts_page ON artifacts_page.artifact = tags.artifact
+        WHERE
+          tags.key = 'identity'
+        `
+      )
+      .bind(this.cursor?.id ?? null, this.limit);
 
   private prepareDecadesQuery = (): D1PreparedStatement =>
-    this.db.prepare(
-      `
-      SELECT
-        tags.artifact,
-        tags.value
-      FROM
-        tags
-      JOIN
-        artifacts_page ON artifacts_page.artifact = tags.artifact
-      WHERE
-        tags.key = 'decade'
-      `
-    );
+    this.db
+      .prepare(
+        `
+        WITH artifacts_page AS (
+          SELECT
+            artifact
+          FROM
+            latest_artifacts
+          WHERE
+            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
+          ORDER BY
+            artifact_id
+          LIMIT
+            ?2
+        )
+        SELECT
+          tags.artifact,
+          tags.value
+        FROM
+          tags
+        JOIN
+          artifacts_page ON artifacts_page.artifact = tags.artifact
+        WHERE
+          tags.key = 'decade'
+        `
+      )
+      .bind(this.cursor?.id ?? null, this.limit);
 
   run = async (): Promise<{
     artifacts: ReadonlyArray<Artifact>;
@@ -212,9 +285,6 @@ export class GetArtifactListQuery {
     // same shape.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = await this.db.batch<any>([
-      this.cursor === undefined
-        ? this.prepareFirstPageTempTable()
-        : this.prepareNextPageTempTable(),
       this.prepareArtifactsQuery(),
       this.prepareArtifactAliasesQuery(),
       this.prepareFilesQuery(),
