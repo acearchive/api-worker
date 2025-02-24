@@ -86,7 +86,10 @@ export const rowsToMap = <K, V>(
         return map;
       }, new Map());
 
-export const toApi = (artifact: Artifact): ApiArtifact => ({
+export const toApi = (
+  artifact: Artifact,
+  { filesDomain }: { filesDomain: string }
+): ApiArtifact => ({
   id: artifact.artifact_id,
   title: artifact.title,
   summary: artifact.summary,
@@ -101,7 +104,7 @@ export const toApi = (artifact: Artifact): ApiArtifact => ({
       media_type: file.media_type ?? undefined,
       hash,
       hash_algorithm,
-      url: `https://files.acearchive.lgbt/artifacts/${artifact.slug}/${file.filename}`,
+      url: `https://${filesDomain}/artifacts/${artifact.slug}/${file.filename}`,
       lang: file.lang ?? undefined,
     };
   }),

@@ -4,6 +4,9 @@ compatibility_date = "2022-10-04"
 
 [env.prod]
 
+  [env.prod.vars]
+  FILES_DOMAIN = "files.acearchive.lgbt"
+
   [env.prod.route]
   pattern = "api.acearchive.lgbt"
   custom_domain = true
@@ -15,6 +18,9 @@ compatibility_date = "2022-10-04"
   preview_database_id = "12b24516-946d-4ebd-abbb-8db821159924"
 
 [env.dev]
+
+  [env.dev.vars]
+  FILES_DOMAIN = "files-dev.acearchive.lgbt"
 
   [env.dev.route]
   pattern = "api-dev.acearchive.lgbt"

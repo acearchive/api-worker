@@ -14,6 +14,7 @@ export interface Env {
   DB: D1Database;
   ARTIFACTS_KV: KVNamespace;
   CURSOR_ENCRYPTION_KEY: string;
+  FILES_DOMAIN: string;
 }
 
 const majorApiVersion = 0;
@@ -39,7 +40,12 @@ router.all("/artifacts/:id", async ({ params, method, query }, env: Env) => {
     });
   }
 
-  return await getArtifact({ artifactId, db: env.DB, method });
+  return await getArtifact({
+    artifactId,
+    db: env.DB,
+    method,
+    filesDomain: env.FILES_DOMAIN,
+  });
 });
 
 router.all("/artifacts/", async ({ method, query }, env: Env) => {
@@ -53,6 +59,7 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
       limit: defaultPaginationLimit,
       db: env.DB,
       method,
+      filesDomain: env.FILES_DOMAIN,
     });
   }
 
@@ -73,6 +80,7 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
     limit,
     db: env.DB,
     method,
+    filesDomain: env.FILES_DOMAIN,
   });
 });
 
