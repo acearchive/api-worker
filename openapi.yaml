@@ -156,6 +156,7 @@ components:
         - title
         - summary
         - url
+        - url_aliases
         - files
         - links
         - people
@@ -226,6 +227,7 @@ components:
               - hash
               - hash_algorithm
               - url
+              - hidden
             properties:
               name:
                 type: string
