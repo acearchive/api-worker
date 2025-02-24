@@ -5,6 +5,7 @@ compatibility_date = "2022-10-04"
 [env.prod]
 
   [env.prod.vars]
+  SITE_DOMAIN = "acearchive.lgbt"
   FILES_DOMAIN = "files.acearchive.lgbt"
 
   [env.prod.route]
@@ -20,6 +21,7 @@ compatibility_date = "2022-10-04"
 [env.dev]
 
   [env.dev.vars]
+  SITE_DOMAIN = "dev.acearchive.lgbt"
   FILES_DOMAIN = "files-dev.acearchive.lgbt"
 
   [env.dev.route]

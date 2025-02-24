@@ -203,8 +203,16 @@ components:
           type: string
           format: uri
           description: |
-            The URL of the artifact page on the Ace Archive site.
+            The canonical URL of the artifact page on the Ace Archive site.
           example: "https://acearchive.lgbt/artifacts/orlando-the-asexual-manifesto"
+        url_aliases:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: |
+            Aliases for the URL of the artifact page on the Ace Archive site.
+          example: []
         files:
           type: array
           description: |
@@ -296,6 +304,11 @@ components:
                   This may be excluded if the language is unknown or if a
                   natural language is not applicable (e.g. a photo).
                 example: "en"
+              hidden:
+                type: boolean
+                description: |
+                  Whether this file is hidden on the Ace Archive site.
+                example: false
         links:
           type: array
           description: |

@@ -9,11 +9,13 @@ export const getArtifact = async ({
   artifactId,
   db,
   method,
+  siteDomain,
   filesDomain,
 }: {
   artifactId: string;
   db: D1Database;
   method: "GET" | "HEAD";
+  siteDomain: string;
   filesDomain: string;
 }): Promise<Response> => {
   const query = new GetArtifactQuery(db, artifactId);
@@ -24,7 +26,7 @@ export const getArtifact = async ({
     throw ArtifactNotFound(artifactId);
   }
 
-  const artifact = toApi(artifactRow, { filesDomain });
+  const artifact = toApi(artifactRow, { siteDomain, filesDomain });
 
   switch (method) {
     case "HEAD":
@@ -40,6 +42,7 @@ export const listArtifacts = async ({
   limit,
   db,
   method,
+  siteDomain,
   filesDomain,
 }: {
   encodedCursor?: string;
@@ -47,6 +50,7 @@ export const listArtifacts = async ({
   limit: number;
   db: D1Database;
   method: "GET" | "HEAD";
+  siteDomain: string;
   filesDomain: string;
 }): Promise<Response> => {
   const cursor =
@@ -60,7 +64,9 @@ export const listArtifacts = async ({
   const query = new GetArtifactListQuery(db, cursor, limit);
   const { artifacts: artifactRows, lastCursor } = await query.run();
 
-  const artifacts = artifactRows.map((item) => toApi(item, { filesDomain }));
+  const artifacts = artifactRows.map((item) =>
+    toApi(item, { siteDomain, filesDomain })
+  );
   let resp_obj: ArtifactList;
 
   if (artifacts.length === 0) {

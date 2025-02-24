@@ -28,7 +28,8 @@ export type FilesRow = Readonly<{
   media_type: string | null;
   multihash: string;
   lang: string | null;
-  hidden: boolean;
+  // SQLite stores booleans as integers.
+  hidden: number;
 }>;
 
 export type FileAliasesRow = Readonly<{
@@ -88,13 +89,16 @@ export const rowsToMap = <K, V>(
 
 export const toApi = (
   artifact: Artifact,
-  { filesDomain }: { filesDomain: string }
+  { filesDomain, siteDomain }: { filesDomain: string; siteDomain: string }
 ): ApiArtifact => ({
   id: artifact.artifact_id,
   title: artifact.title,
   summary: artifact.summary,
   description: artifact.description ?? undefined,
-  url: `https://acearchive.lgbt/artifacts/${artifact.slug}`,
+  url: `https://${siteDomain}/artifacts/${artifact.slug}`,
+  url_aliases: artifact.aliases.map(
+    (alias) => `https://${siteDomain}/artifacts/${alias.slug}`
+  ),
   files: artifact.files.map((file) => {
     const { hash, hash_algorithm } = decodeMultihash(file.multihash);
 
@@ -106,6 +110,7 @@ export const toApi = (
       hash_algorithm,
       url: `https://${filesDomain}/artifacts/${artifact.slug}/${file.filename}`,
       lang: file.lang ?? undefined,
+      hidden: file.hidden === 0 ? false : true,
     };
   }),
   links: artifact.links.map((link) => ({

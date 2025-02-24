@@ -28,6 +28,7 @@ export type ArtifactFile = Readonly<{
   hash_algorithm: string;
   url: string;
   lang?: string;
+  hidden: boolean;
 }>;
 
 export type Artifact = Readonly<{
@@ -43,6 +44,7 @@ export type Artifact = Readonly<{
   from_year: number;
   to_year?: number;
   decades: ReadonlyArray<number>;
+  url_aliases: ReadonlyArray<string>;
 }>;
 
 export type ArtifactList = Readonly<{
