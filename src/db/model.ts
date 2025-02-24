@@ -54,7 +54,7 @@ export type IdentitiesRow = Readonly<{
 
 export type DecadesRow = Readonly<{
   artifact: ArtifactKey;
-  value: number;
+  value: string;
 }>;
 
 export type Artifact = ArtifactsRow & {
@@ -113,5 +113,5 @@ export const toApi = (artifact: Artifact): ApiArtifact => ({
   identities: artifact.identities.map((identity) => identity.value),
   from_year: artifact.from_year,
   to_year: artifact.to_year ?? undefined,
-  decades: artifact.decades.map((decade) => decade.value),
+  decades: artifact.decades.map((decade) => parseInt(decade.value, 10)),
 });
