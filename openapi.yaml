@@ -386,7 +386,7 @@ components:
             The archive collections this artifact belongs to. Collections group
             similar artifacts on the site.
           example:
-            - "origins of identity labels"
+            - "newsjournals and underground press"
           items:
             type: string
     Problem:
