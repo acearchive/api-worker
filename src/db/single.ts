@@ -2,6 +2,7 @@ import {
   Artifact,
   ArtifactAliasesRow,
   ArtifactsRow,
+  CollectionsRow,
   DecadesRow,
   FileAliasesRow,
   FilesRow,
@@ -177,6 +178,24 @@ export class GetArtifactQuery {
       .bind(this.artifactId);
   };
 
+  private prepareCollectionsQuery = (): D1PreparedStatement => {
+    return this.db
+      .prepare(
+        `
+        SELECT
+          tags.value
+        FROM
+          tags
+        JOIN
+          latest_artifacts ON latest_artifacts.artifact = tags.artifact
+        WHERE
+          tags.key = 'collection'
+          AND latest_artifacts.artifact_id = ?1
+        `
+      )
+      .bind(this.artifactId);
+  };
+
   run = async (): Promise<Artifact | undefined> => {
     // The typing for the batch API seems to expect that every row will have the
     // same shape.
@@ -190,6 +209,7 @@ export class GetArtifactQuery {
       this.preparePeopleQuery(),
       this.prepareIdentitiesQuery(),
       this.prepareDecadesQuery(),
+      this.prepareCollectionsQuery(),
     ]);
 
     const artifactsRows: ReadonlyArray<ArtifactsRow> | undefined =
@@ -204,6 +224,8 @@ export class GetArtifactQuery {
     const identitiesRows: ReadonlyArray<IdentitiesRow> | undefined =
       rows[6].results;
     const decadesRows: ReadonlyArray<DecadesRow> | undefined = rows[7].results;
+    const collectionsRows: ReadonlyArray<CollectionsRow> | undefined =
+      rows[8].results;
 
     const artifactsRow =
       artifactsRows === undefined ? undefined : artifactsRows[0];
@@ -225,6 +247,7 @@ export class GetArtifactQuery {
       people: peopleRows ?? [],
       identities: identitiesRows ?? [],
       decades: decadesRows ?? [],
+      collections: collectionsRows ?? [],
       aliases: artifactAliasesRows ?? [],
       ...artifactsRow,
     };

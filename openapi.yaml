@@ -163,6 +163,7 @@ components:
         - identities
         - from_year
         - decades
+        - collections
       properties:
         id:
           type: string
@@ -379,6 +380,15 @@ components:
           items:
             type: integer
             multipleOf: 10
+        collections:
+          type: array
+          description: |
+            The archive collections this artifact belongs to. Collections group
+            similar artifacts on the site.
+          example:
+            - "origins of identity labels"
+          items:
+            type: string
     Problem:
       type: object
       required:

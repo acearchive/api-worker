@@ -43,20 +43,18 @@ export type LinksRow = Readonly<{
   url: string;
 }>;
 
-export type PeopleRow = Readonly<{
+type TagsRow = Readonly<{
   artifact: ArtifactKey;
   value: string;
 }>;
 
-export type IdentitiesRow = Readonly<{
-  artifact: ArtifactKey;
-  value: string;
-}>;
+export type PeopleRow = TagsRow;
 
-export type DecadesRow = Readonly<{
-  artifact: ArtifactKey;
-  value: string;
-}>;
+export type IdentitiesRow = TagsRow;
+
+export type DecadesRow = TagsRow;
+
+export type CollectionsRow = TagsRow;
 
 export type Artifact = ArtifactsRow & {
   files: ReadonlyArray<
@@ -66,6 +64,7 @@ export type Artifact = ArtifactsRow & {
   people: ReadonlyArray<PeopleRow>;
   identities: ReadonlyArray<IdentitiesRow>;
   decades: ReadonlyArray<DecadesRow>;
+  collections: ReadonlyArray<CollectionsRow>;
   aliases: ReadonlyArray<ArtifactAliasesRow>;
 };
 
@@ -122,4 +121,5 @@ export const toApi = (
   from_year: artifact.from_year,
   to_year: artifact.to_year ?? undefined,
   decades: artifact.decades.map((decade) => parseInt(decade.value, 10)),
+  collections: artifact.collections.map((collection) => collection.value),
 });

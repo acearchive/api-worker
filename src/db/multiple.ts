@@ -3,6 +3,7 @@ import {
   Artifact,
   ArtifactAliasesRow,
   ArtifactsRow,
+  CollectionsRow,
   DecadesRow,
   FileAliasesRow,
   FilesRow,
@@ -277,6 +278,35 @@ export class GetArtifactListQuery {
       )
       .bind(this.cursor?.id ?? null, this.limit);
 
+  private prepareCollectionsQuery = (): D1PreparedStatement =>
+    this.db
+      .prepare(
+        `
+        WITH artifacts_page AS (
+          SELECT
+            artifact
+          FROM
+            latest_artifacts
+          WHERE
+            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
+          ORDER BY
+            artifact_id
+          LIMIT
+            ?2
+        )
+        SELECT
+          tags.artifact,
+          tags.value
+        FROM
+          tags
+        JOIN
+          artifacts_page ON artifacts_page.artifact = tags.artifact
+        WHERE
+          tags.key = 'collection'
+        `
+      )
+      .bind(this.cursor?.id ?? null, this.limit);
+
   run = async (): Promise<{
     artifacts: ReadonlyArray<Artifact>;
     lastCursor: string;
@@ -293,6 +323,7 @@ export class GetArtifactListQuery {
       this.preparePeopleQuery(),
       this.prepareIdentitiesQuery(),
       this.prepareDecadesQuery(),
+      this.prepareCollectionsQuery(),
       this.prepareLastCursorQuery(),
     ]);
 
@@ -308,9 +339,11 @@ export class GetArtifactListQuery {
     const identitiesRows: ReadonlyArray<IdentitiesRow> | undefined =
       rows[6].results;
     const decadesRows: ReadonlyArray<DecadesRow> | undefined = rows[7].results;
+    const collectionsRows: ReadonlyArray<CollectionsRow> | undefined =
+      rows[8].results;
 
     const lastCursorRows: ReadonlyArray<{ last_cursor: string }> | undefined =
-      rows[8].results;
+      rows[9].results;
 
     const lastCursorRow =
       lastCursorRows === undefined ? undefined : lastCursorRows[0];
@@ -329,6 +362,7 @@ export class GetArtifactListQuery {
     const peopleMap = rowsToMap(peopleRows, (row) => row.artifact);
     const identitiesMap = rowsToMap(identitiesRows, (row) => row.artifact);
     const decadesMap = rowsToMap(decadesRows, (row) => row.artifact);
+    const collectionsMap = rowsToMap(collectionsRows, (row) => row.artifact);
 
     return {
       artifacts: artifactsRows.map((artifactsRow) => ({
@@ -341,6 +375,7 @@ export class GetArtifactListQuery {
         people: peopleMap.get(artifactsRow.id) ?? [],
         identities: identitiesMap.get(artifactsRow.id) ?? [],
         decades: decadesMap.get(artifactsRow.id) ?? [],
+        collections: collectionsMap.get(artifactsRow.id) ?? [],
         aliases: artifactAliasesMap.get(artifactsRow.id) ?? [],
         ...artifactsRow,
       })),
