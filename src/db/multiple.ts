@@ -125,7 +125,8 @@ export class GetArtifactListQuery {
           files.media_type,
           files.multihash,
           files.lang,
-          files.hidden
+          files.hidden,
+          files.pos
         FROM
           files
         JOIN
@@ -182,7 +183,8 @@ export class GetArtifactListQuery {
         SELECT
           links.artifact,
           links.name,
-          links.url
+          links.url,
+          links.pos
         FROM
           links
         JOIN

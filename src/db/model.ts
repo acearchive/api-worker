@@ -30,6 +30,7 @@ export type FilesRow = Readonly<{
   lang: string | null;
   // SQLite stores booleans as integers.
   hidden: number;
+  pos: number;
 }>;
 
 export type FileAliasesRow = Readonly<{
@@ -41,6 +42,7 @@ export type LinksRow = Readonly<{
   artifact: ArtifactKey;
   name: string;
   url: string;
+  pos: number;
 }>;
 
 type TagsRow = Readonly<{
@@ -98,24 +100,33 @@ export const toApi = (
   url_aliases: artifact.aliases.map(
     (alias) => `https://${siteDomain}/artifacts/${alias.slug}`
   ),
-  files: artifact.files.map((file) => {
-    const { hash, hash_algorithm } = decodeMultihash(file.multihash);
+  files: artifact.files
+    // Sort files ascending by their "position", which determines the order
+    // they're returned in the API response. The intent is to allow files and
+    // links to appear in an intentional order (rather than a nondeterministic
+    // order) on the site.
+    .toSorted((a, b) => a.pos - b.pos)
+    .map((file) => {
+      const { hash, hash_algorithm } = decodeMultihash(file.multihash);
 
-    return {
-      filename: file.filename,
-      name: file.name,
-      media_type: file.media_type ?? undefined,
-      hash,
-      hash_algorithm,
-      url: `https://${filesDomain}/artifacts/${artifact.slug}/${file.filename}`,
-      lang: file.lang ?? undefined,
-      hidden: file.hidden === 0 ? false : true,
-    };
-  }),
-  links: artifact.links.map((link) => ({
-    name: link.name,
-    url: link.url,
-  })),
+      return {
+        filename: file.filename,
+        name: file.name,
+        media_type: file.media_type ?? undefined,
+        hash,
+        hash_algorithm,
+        url: `https://${filesDomain}/artifacts/${artifact.slug}/${file.filename}`,
+        lang: file.lang ?? undefined,
+        hidden: file.hidden === 0 ? false : true,
+      };
+    }),
+  links: artifact.links
+    // Sort links by position like we sort files.
+    .toSorted((a, b) => a.pos - b.pos)
+    .map((link) => ({
+      name: link.name,
+      url: link.url,
+    })),
   people: artifact.people.map((person) => person.value),
   identities: artifact.identities.map((identity) => identity.value),
   from_year: artifact.from_year,
