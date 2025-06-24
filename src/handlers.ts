@@ -1,9 +1,10 @@
 import { ArtifactNotFound, OkResponse as OkResponse } from "./response";
 import { GetArtifactQuery } from "./db/single";
-import { toApi } from "./db/model";
+import { artifactToApi, tagToApi } from "./db/model";
 import { decodeCursor, encodeCursor } from "./cursor";
 import { GetArtifactListQuery } from "./db/multiple";
-import { ArtifactList } from "./api";
+import { ArtifactList, TagList } from "./api";
+import { GetTagsQuery } from "./db/tags";
 
 export const getArtifact = async ({
   artifactId,
@@ -26,7 +27,7 @@ export const getArtifact = async ({
     throw ArtifactNotFound(artifactId);
   }
 
-  const artifact = toApi(artifactRow, { siteDomain, filesDomain });
+  const artifact = artifactToApi(artifactRow, { siteDomain, filesDomain });
 
   switch (method) {
     case "HEAD":
@@ -57,15 +58,15 @@ export const listArtifacts = async ({
     encodedCursor === undefined
       ? undefined
       : await decodeCursor({
-          cursor: encodedCursor,
-          rawEncryptionKey: cursorKey,
-        });
+        cursor: encodedCursor,
+        rawEncryptionKey: cursorKey,
+      });
 
   const query = new GetArtifactListQuery(db, cursor, limit);
   const { artifacts: artifactRows, lastCursor } = await query.run();
 
   const artifacts = artifactRows.map((item) =>
-    toApi(item, { siteDomain, filesDomain })
+    artifactToApi(item, { siteDomain, filesDomain })
   );
   let resp_obj: ArtifactList;
 
@@ -96,5 +97,27 @@ export const listArtifacts = async ({
       return OkResponse.json(200);
     case "GET":
       return OkResponse.json(200, resp_obj);
+  }
+};
+
+// TODO: Add pagination
+export const listTags = async ({
+  db,
+  method,
+}: {
+  db: D1Database;
+  method: "GET" | "HEAD";
+}): Promise<Response> => {
+  const query = new GetTagsQuery(db);
+
+  const tagRows = await query.run();
+
+  const tagList: TagList = { items: tagRows.map(tagToApi) };
+
+  switch (method) {
+    case "HEAD":
+      return OkResponse.json(200);
+    case "GET":
+      return OkResponse.json(200, tagList);
   }
 };

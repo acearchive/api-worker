@@ -52,3 +52,15 @@ export type ArtifactList = Readonly<{
   items: ReadonlyArray<Artifact>;
   next_cursor?: string;
 }>;
+
+export type TagKind = "person" | "identity" | "decade" | "collection";
+
+export type Tag = Readonly<{
+  name: string;
+  kind: TagKind;
+  description?: string;
+}>;
+
+export type TagList = Readonly<{
+  items: ReadonlyArray<Tag>;
+}>;

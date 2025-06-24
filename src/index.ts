@@ -1,5 +1,5 @@
 import { Router } from "itty-router";
-import { getArtifact, listArtifacts } from "./handlers";
+import { getArtifact, listArtifacts, listTags } from "./handlers";
 import {
   EndpointNotFound,
   MethodNotAllowed,
@@ -86,6 +86,14 @@ router.all("/artifacts/", async ({ method, query }, env: Env) => {
     siteDomain: env.SITE_DOMAIN,
     filesDomain: env.FILES_DOMAIN,
   });
+});
+
+router.all("/tags/", async ({ method }, env: Env) => {
+  if (method !== "GET" && method !== "HEAD") {
+    throw MethodNotAllowed(method, ["GET", "HEAD", "OPTIONS"]);
+  }
+
+  return await listTags({ db: env.DB, method });
 });
 
 router.all("*", ({ url }) => {

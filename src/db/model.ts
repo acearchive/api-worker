@@ -1,4 +1,4 @@
-import { Artifact as ApiArtifact } from "../api";
+import { Artifact as ApiArtifact, Tag as ApiTag } from "../api";
 import { decodeMultihash } from "../multihash";
 
 type ArtifactKey = number;
@@ -47,18 +47,18 @@ export type LinksRow = Readonly<{
   pos: number;
 }>;
 
-type TagsRow = Readonly<{
+type ArtifactTagsRow = Readonly<{
   artifact: ArtifactKey;
   name: string;
 }>;
 
-export type PeopleRow = TagsRow;
+export type PeopleRow = ArtifactTagsRow;
 
-export type IdentitiesRow = TagsRow;
+export type IdentitiesRow = ArtifactTagsRow;
 
-export type DecadesRow = TagsRow;
+export type DecadesRow = ArtifactTagsRow;
 
-export type CollectionsRow = TagsRow;
+export type CollectionsRow = ArtifactTagsRow;
 
 export type Artifact = ArtifactsRow & {
   files: ReadonlyArray<
@@ -71,6 +71,18 @@ export type Artifact = ArtifactsRow & {
   collections: ReadonlyArray<CollectionsRow>;
   aliases: ReadonlyArray<ArtifactAliasesRow>;
 };
+
+export type TagsRow = Readonly<{
+  name: string;
+  kind: TagKind;
+  description: string | null;
+}>;
+
+export type Tag = Readonly<{
+  name: string;
+  kind: TagKind;
+  description?: string;
+}>;
 
 // Convert an array of db rows to a map indexed by a foreign key.
 export const rowsToMap = <K, V>(
@@ -90,7 +102,7 @@ export const rowsToMap = <K, V>(
       return map;
     }, new Map());
 
-export const toApi = (
+export const artifactToApi = (
   artifact: Artifact,
   { filesDomain, siteDomain }: { filesDomain: string; siteDomain: string }
 ): ApiArtifact => ({
@@ -135,4 +147,10 @@ export const toApi = (
   to_year: artifact.to_year ?? undefined,
   decades: artifact.decades.map((decade) => parseInt(decade.name, 10)),
   collections: artifact.collections.map((collection) => collection.name),
+});
+
+export const tagToApi = (tag: Tag): ApiTag => ({
+  name: tag.name,
+  kind: tag.kind,
+  description: tag.description,
 });
