@@ -9,6 +9,7 @@ import {
   IdentitiesRow,
   LinksRow,
   PeopleRow,
+  TagKind,
 } from "./model";
 
 export class GetArtifactQuery {
@@ -126,76 +127,24 @@ export class GetArtifactQuery {
       .bind(this.artifactId);
   };
 
-  private preparePeopleQuery = (): D1PreparedStatement => {
+  private prepareTagsQuery = (kind: TagKind): D1PreparedStatement => {
     return this.db
       .prepare(
         `
         SELECT
-          tags.value
+          tags.name
         FROM
           tags
         JOIN
-          latest_artifacts ON latest_artifacts.artifact = tags.artifact
-        WHERE
-          tags.key = 'person'
-          AND latest_artifacts.artifact_id = ?1
-        `
-      )
-      .bind(this.artifactId);
-  };
-
-  private prepareIdentitiesQuery = (): D1PreparedStatement => {
-    return this.db
-      .prepare(
-        `
-        SELECT
-          tags.value
-        FROM
-          tags
+          artifact_tags ON tags.id = artifact_tags.tag
         JOIN
-          latest_artifacts ON latest_artifacts.artifact = tags.artifact
+          latest_artifacts ON latest_artifacts.artifact = artifact_tags.artifact
         WHERE
-          tags.key = 'identity'
-          AND latest_artifacts.artifact_id = ?1
+          tags.kind = ?1
+          AND latest_artifacts.artifact_id = ?2
         `
       )
-      .bind(this.artifactId);
-  };
-
-  private prepareDecadesQuery = (): D1PreparedStatement => {
-    return this.db
-      .prepare(
-        `
-        SELECT
-          tags.value
-        FROM
-          tags
-        JOIN
-          latest_artifacts ON latest_artifacts.artifact = tags.artifact
-        WHERE
-          tags.key = 'decade'
-          AND latest_artifacts.artifact_id = ?1
-        `
-      )
-      .bind(this.artifactId);
-  };
-
-  private prepareCollectionsQuery = (): D1PreparedStatement => {
-    return this.db
-      .prepare(
-        `
-        SELECT
-          tags.value
-        FROM
-          tags
-        JOIN
-          latest_artifacts ON latest_artifacts.artifact = tags.artifact
-        WHERE
-          tags.key = 'collection'
-          AND latest_artifacts.artifact_id = ?1
-        `
-      )
-      .bind(this.artifactId);
+      .bind(kind, this.artifactId);
   };
 
   run = async (): Promise<Artifact | undefined> => {
@@ -208,10 +157,10 @@ export class GetArtifactQuery {
       this.prepareFilesQuery(),
       this.prepareFileAliasesQuery(),
       this.prepareLinksQuery(),
-      this.preparePeopleQuery(),
-      this.prepareIdentitiesQuery(),
-      this.prepareDecadesQuery(),
-      this.prepareCollectionsQuery(),
+      this.prepareTagsQuery("person"),
+      this.prepareTagsQuery("identity"),
+      this.prepareTagsQuery("decade"),
+      this.prepareTagsQuery("collection"),
     ]);
 
     const artifactsRows: ReadonlyArray<ArtifactsRow> | undefined =

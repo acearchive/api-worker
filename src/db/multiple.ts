@@ -11,6 +11,7 @@ import {
   LinksRow,
   PeopleRow,
   rowsToMap,
+  TagKind,
 } from "./model";
 
 export class GetArtifactListQuery {
@@ -193,7 +194,7 @@ export class GetArtifactListQuery {
       )
       .bind(this.cursor?.id ?? null, this.limit);
 
-  private preparePeopleQuery = (): D1PreparedStatement =>
+  private prepareTagsQuery = (kind: TagKind): D1PreparedStatement =>
     this.db
       .prepare(
         `
@@ -210,104 +211,19 @@ export class GetArtifactListQuery {
             ?2
         )
         SELECT
-          tags.artifact,
-          tags.value
+          artifact_tags.artifact,
+          tags.name
         FROM
           tags
         JOIN
-          artifacts_page ON artifacts_page.artifact = tags.artifact
-        WHERE
-          tags.key = 'person'
-        `
-      )
-      .bind(this.cursor?.id ?? null, this.limit);
-
-  private prepareIdentitiesQuery = (): D1PreparedStatement =>
-    this.db
-      .prepare(
-        `
-        WITH artifacts_page AS (
-          SELECT
-            artifact
-          FROM
-            latest_artifacts
-          WHERE
-            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
-          ORDER BY
-            artifact_id
-          LIMIT
-            ?2
-        )
-        SELECT
-          tags.artifact,
-          tags.value
-        FROM
-          tags
+          artifact_tags ON tags.id = artifact_tags.tag
         JOIN
-          artifacts_page ON artifacts_page.artifact = tags.artifact
+          artifacts_page ON artifact_tags.artifact = artifacts_page.artifact
         WHERE
-          tags.key = 'identity'
+          tags.kind = ?3
         `
       )
-      .bind(this.cursor?.id ?? null, this.limit);
-
-  private prepareDecadesQuery = (): D1PreparedStatement =>
-    this.db
-      .prepare(
-        `
-        WITH artifacts_page AS (
-          SELECT
-            artifact
-          FROM
-            latest_artifacts
-          WHERE
-            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
-          ORDER BY
-            artifact_id
-          LIMIT
-            ?2
-        )
-        SELECT
-          tags.artifact,
-          tags.value
-        FROM
-          tags
-        JOIN
-          artifacts_page ON artifacts_page.artifact = tags.artifact
-        WHERE
-          tags.key = 'decade'
-        `
-      )
-      .bind(this.cursor?.id ?? null, this.limit);
-
-  private prepareCollectionsQuery = (): D1PreparedStatement =>
-    this.db
-      .prepare(
-        `
-        WITH artifacts_page AS (
-          SELECT
-            artifact
-          FROM
-            latest_artifacts
-          WHERE
-            CASE WHEN ?1 IS NULL THEN TRUE ELSE artifact_id > ?1 END
-          ORDER BY
-            artifact_id
-          LIMIT
-            ?2
-        )
-        SELECT
-          tags.artifact,
-          tags.value
-        FROM
-          tags
-        JOIN
-          artifacts_page ON artifacts_page.artifact = tags.artifact
-        WHERE
-          tags.key = 'collection'
-        `
-      )
-      .bind(this.cursor?.id ?? null, this.limit);
+      .bind(this.cursor?.id ?? null, this.limit, kind);
 
   run = async (): Promise<{
     artifacts: ReadonlyArray<Artifact>;
@@ -322,10 +238,10 @@ export class GetArtifactListQuery {
       this.prepareFilesQuery(),
       this.prepareFileAliasesQuery(),
       this.prepareLinksQuery(),
-      this.preparePeopleQuery(),
-      this.prepareIdentitiesQuery(),
-      this.prepareDecadesQuery(),
-      this.prepareCollectionsQuery(),
+      this.prepareTagsQuery("person"),
+      this.prepareTagsQuery("identity"),
+      this.prepareTagsQuery("decade"),
+      this.prepareTagsQuery("collection"),
       this.prepareLastCursorQuery(),
     ]);
 

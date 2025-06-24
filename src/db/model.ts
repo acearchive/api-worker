@@ -4,6 +4,8 @@ import { decodeMultihash } from "../multihash";
 type ArtifactKey = number;
 type FileKey = number;
 
+export type TagKind = "person" | "identity" | "decade" | "collection";
+
 export type ArtifactsRow = Readonly<{
   id: ArtifactKey;
   artifact_id: string;
@@ -47,7 +49,7 @@ export type LinksRow = Readonly<{
 
 type TagsRow = Readonly<{
   artifact: ArtifactKey;
-  value: string;
+  name: string;
 }>;
 
 export type PeopleRow = TagsRow;
@@ -78,15 +80,15 @@ export const rowsToMap = <K, V>(
   rows === undefined
     ? new Map()
     : rows.reduce((map, row) => {
-        const key = func(row);
+      const key = func(row);
 
-        const newRows = map.get(key) ?? [];
-        newRows.push(row);
+      const newRows = map.get(key) ?? [];
+      newRows.push(row);
 
-        map.set(key, newRows);
+      map.set(key, newRows);
 
-        return map;
-      }, new Map());
+      return map;
+    }, new Map());
 
 export const toApi = (
   artifact: Artifact,
@@ -127,10 +129,10 @@ export const toApi = (
       name: link.name,
       url: link.url,
     })),
-  people: artifact.people.map((person) => person.value),
-  identities: artifact.identities.map((identity) => identity.value),
+  people: artifact.people.map((person) => person.name),
+  identities: artifact.identities.map((identity) => identity.name),
   from_year: artifact.from_year,
   to_year: artifact.to_year ?? undefined,
-  decades: artifact.decades.map((decade) => parseInt(decade.value, 10)),
-  collections: artifact.collections.map((collection) => collection.value),
+  decades: artifact.decades.map((decade) => parseInt(decade.name, 10)),
+  collections: artifact.collections.map((collection) => collection.name),
 });
