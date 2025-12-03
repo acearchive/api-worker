@@ -27,6 +27,8 @@ export type ArtifactFile = Readonly<{
   hash: string;
   hash_algorithm: string;
   url: string;
+  short_url: string;
+  raw_url: string;
   lang?: string;
   hidden: boolean;
 }>;
@@ -37,6 +39,7 @@ export type Artifact = Readonly<{
   summary: string;
   description?: string;
   url: string;
+  short_url: string;
   files: ReadonlyArray<ArtifactFile>;
   links: ReadonlyArray<ArtifactLink>;
   people: ReadonlyArray<string>;

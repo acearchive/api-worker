@@ -92,15 +92,15 @@ export const rowsToMap = <K, V>(
   rows === undefined
     ? new Map()
     : rows.reduce((map, row) => {
-      const key = func(row);
+        const key = func(row);
 
-      const newRows = map.get(key) ?? [];
-      newRows.push(row);
+        const newRows = map.get(key) ?? [];
+        newRows.push(row);
 
-      map.set(key, newRows);
+        map.set(key, newRows);
 
-      return map;
-    }, new Map());
+        return map;
+      }, new Map());
 
 export const artifactToApi = (
   artifact: Artifact,
@@ -111,6 +111,7 @@ export const artifactToApi = (
   summary: artifact.summary,
   description: artifact.description ?? undefined,
   url: `https://${siteDomain}/artifacts/${artifact.slug}`,
+  short_url: `https://${siteDomain}/a/${artifact.artifact_id}`,
   url_aliases: artifact.aliases.map(
     (alias) => `https://${siteDomain}/artifacts/${alias.slug}`
   ),
@@ -130,6 +131,8 @@ export const artifactToApi = (
         hash,
         hash_algorithm,
         url: `https://${filesDomain}/artifacts/${artifact.slug}/${file.filename}`,
+        short_url: `https://${filesDomain}/a/${artifact.artifact_id}/${file.filename}`,
+        raw_url: `https://${filesDomain}/r/${artifact.artifact_id}/${file.filename}`,
         lang: file.lang ?? undefined,
         hidden: file.hidden === 0 ? false : true,
       };

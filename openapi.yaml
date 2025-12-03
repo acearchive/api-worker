@@ -1,6 +1,6 @@
 openapi: "3.1.0"
 info:
-  version: "0.1.0"
+  version: "0.1.1"
   title: "Ace Archive API"
   description: |
     An API for querying metadata about artifacts in [Ace
@@ -207,6 +207,12 @@ components:
           description: |
             The canonical URL of the artifact page on the Ace Archive site.
           example: "https://acearchive.lgbt/artifacts/orlando-the-asexual-manifesto"
+        short_url:
+          type: string
+          format: uri
+          description: |
+            A shortened URL which redirects to the canonical URL.
+          example: "https://acearchive.lgbt/a/MKbNWmmhCog6"
         url_aliases:
           type: array
           items:
@@ -295,8 +301,26 @@ components:
                 type: string
                 format: uri
                 description: |
-                  The URL where this file can be downloaded.
+                  The canonical URL of the file.
+
+                  Using HTTP content negotiation, this either points to the raw
+                  file or to a web page which embeds the file and includes a
+                  backlink to Ace Archive. Under most circumstances, this should
+                  return the web page when viewed in the browser and the raw
+                  file otherwise.
                 example: "https://files.acearchive.lgbt/artifacts/orlando-the-asexual-manifesto/the-asexual-manifesto.pdf"
+              short_url:
+                type: string
+                format: uri
+                description: |
+                  A shortened URL which redirects to the canonical URL.
+                example: "https://files.acearchive.lgbt/a/MKbNWmmhCog6/the-asexual-manifesto.pdf"
+              raw_url:
+                type: string
+                format: uri
+                description: |
+                  A URL which always returns the raw file.
+                example: "https://files.acearchive.lgbt/r/MKbNWmmhCog6/the-asexual-manifesto.pdf"
               lang:
                 type: string
                 description: |
